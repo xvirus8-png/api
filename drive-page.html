@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>ملفات PDF - تحديث تلقائي</title>
+<title>ملفات PDF - الأحدث أولاً</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="ملفات PDF">
@@ -223,7 +223,7 @@ async function refreshCurrentFolderSilently(){
     const res = await gapi.client.drive.files.list({
       q: `'${folderId}' in parents and trashed=false`,
       fields: "files(id,name,mimeType,size,modifiedTime,iconLink)",
-      orderBy: "name",
+      orderBy: "modifiedTime desc",  // 🔄 الأحدث أولاً
       pageSize: 100
     });
     const newFiles = res.result.files || [];
@@ -238,7 +238,6 @@ async function refreshCurrentFolderSilently(){
     currentFiles = newFiles;
     renderFiles();
     updateSendBtn();
-    // لا نغير breadcrumb ولا نخفي لوحة الدخول
   }catch(e){
     console.warn("Auto refresh error", e);
     if(e.status===401){
@@ -342,7 +341,7 @@ async function loadFolder(folderId){
     const res = await gapi.client.drive.files.list({
       q: `'${folderId}' in parents and trashed=false`,
       fields: "files(id,name,mimeType,size,modifiedTime,iconLink)",
-      orderBy: "name",
+      orderBy: "modifiedTime desc",  // 🔄 الأحدث أولاً
       pageSize: 100
     });
     currentFiles = res.result.files || [];
@@ -352,7 +351,6 @@ async function loadFolder(folderId){
     document.getElementById("filesList").style.display="block";
     document.getElementById("toolbar").classList.add("show");
     document.getElementById("backBtn").style.display = folderStack.length>1?"flex":"none";
-    // إعادة تشغيل التحديث التلقائي إذا كان مفعلاً سابقاً
     if(autoRefreshActive){
       startAutoRefresh();
     }
@@ -451,7 +449,7 @@ function updateSendBtn(){
   document.getElementById("bottomBar").style.display = count?"block":"none";
 }
 
-// ===== SEND (DOWNLOAD + SHARE) =====
+// ===== SEND =====
 async function sendSelected(){
   const toSend = currentFiles.filter(f=>selectedIds.has(f.id));
   if(!toSend.length) return;
@@ -511,8 +509,6 @@ window.jumpTo=jumpTo; window.toggleDark=toggleDark; window.toggleAutoRefresh=tog
 
 window.onload = () => {
   initGapi();
-  // لا نضغط تلقائياً على زر تسجيل الدخول لأن بعض المتصفحات تمنع النوافذ المنبثقة بدون تفاعل المستخدم
-  // بدلاً من ذلك نعرض شاشة تسجيل الدخول بشكل طبيعي
 };
 </script>
 </body>
