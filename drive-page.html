@@ -1,515 +1,164 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>ملفات PDF - الأحدث أولاً</title>
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="ملفات PDF">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-<style>
-*{box-sizing:border-box;margin:0;padding:0;-webkit-user-select:none;user-select:none}
-:root{
-  --bg:#f5f7fa;--card:#fff;--shadow:0 8px 25px rgba(0,0,0,.07);
-  --text:#1f2a44;--sub:#6e7b96;--border:#edf2ff;
-  --primary:#0d6efd;--primary-light:#eef4ff;--primary-border:#dbe4ff;
-  --bottom:rgba(255,255,255,.92);
-}
-body.dark{
-  --bg:#0f1117;--card:#1a1d27;--shadow:0 8px 25px rgba(0,0,0,.3);
-  --text:#e2e8f0;--sub:#8896b0;--border:#2a3456;
-  --primary-light:#161926;--primary-border:#2a3456;
-  --bottom:rgba(15,17,23,.94);
-}
-html,body{height:100%;overflow:hidden;font-family:system-ui}
-body{background:var(--bg);color:var(--text);transition:background .3s,color .3s;padding-bottom:90px}
-.container{max-width:600px;margin:auto;padding:15px}
-
-/* TOP BAR */
-.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.top-bar h1{font-size:20px;font-weight:800}
-.top-bar-left{display:flex;align-items:center;gap:8px}
-.icon-btn{width:42px;height:42px;border:none;border-radius:12px;background:var(--card);box-shadow:var(--shadow);font-size:18px;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;transition:background .3s}
-
-/* LOGIN CARD */
-#loginCard{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px;text-align:center}
-.login-icon{width:80px;height:80px;border-radius:24px;background:linear-gradient(135deg,#4285f4,#34a853);display:flex;align-items:center;justify-content:center;font-size:38px;margin-bottom:8px}
-.login-title{font-size:20px;font-weight:800}
-.login-sub{font-size:14px;color:var(--sub);max-width:260px;line-height:1.6}
-.google-btn{display:flex;align-items:center;gap:10px;padding:14px 24px;border-radius:16px;border:none;background:#fff;box-shadow:0 4px 16px rgba(0,0,0,.12);font-size:16px;font-weight:700;cursor:pointer;color:#1f2a44}
-.google-btn img{width:22px;height:22px}
-
-/* TOOLBAR */
-#toolbar{display:none;margin-bottom:12px;gap:8px;flex-wrap:wrap;align-items:center}
-#toolbar.show{display:flex}
-.mini-btn{border:none;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:800;cursor:pointer;background:var(--primary-light);color:var(--primary);border:1px solid var(--primary-border);transition:background .3s}
-.mini-btn.danger{background:#fbe7e7;color:#b42318;border-color:#fecaca}
-body.dark .mini-btn.danger{background:#2d1515;color:#f87171;border-color:#4a1a1a}
-.mini-btn.active{background:var(--primary);color:white;border-color:var(--primary);}
-.sel-count{font-size:13px;font-weight:800;color:var(--sub);padding:9px 4px}
-.refresh-badge{font-size:11px;background:var(--card);border-radius:20px;padding:2px 8px;margin-right:6px;color:var(--sub);font-weight:normal;}
-
-/* FILE LIST */
-#filesList{overflow-y:auto;height:calc(100vh - 200px)}
-.file-card{background:var(--card);border-radius:16px;padding:12px 14px;margin-bottom:10px;box-shadow:var(--shadow);display:flex;align-items:center;gap:12px;border:1.5px solid var(--border);cursor:pointer;transition:background .3s,border-color .3s}
-.file-card.selected{border-color:var(--primary);background:var(--primary-light)}
-.file-check{width:20px;height:20px;accent-color:var(--primary);flex:0 0 20px}
-.file-icon{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#ef4444,#fb7185);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;flex:0 0 42px}
-.file-icon.folder{background:linear-gradient(135deg,#f59e0b,#fbbf24)}
-.file-info{flex:1;min-width:0}
-.file-name{font-size:14px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
-.file-meta{font-size:12px;color:var(--sub)}
-.file-arrow{color:var(--sub);font-size:16px}
-
-/* BREADCRUMB */
-#breadcrumb{display:flex;align-items:center;gap:6px;margin-bottom:12px;flex-wrap:wrap;min-height:28px}
-.crumb{font-size:13px;font-weight:700;color:var(--primary);cursor:pointer;padding:4px 8px;border-radius:8px;background:var(--primary-light);border:1px solid var(--primary-border)}
-.crumb-sep{color:var(--sub);font-size:12px}
-
-/* EMPTY / LOADING */
-.empty-box{background:var(--card);border-radius:16px;padding:32px;text-align:center;color:var(--sub);font-weight:700;box-shadow:var(--shadow)}
-.skeleton{background:var(--card);border-radius:16px;height:66px;margin-bottom:10px;overflow:hidden;position:relative}
-.skeleton::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 25%,rgba(150,150,150,.08) 50%,transparent 75%);background-size:200% 100%;animation:shimmer 1.4s infinite}
-@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-
-/* BOTTOM BAR */
-.bottom-bar{position:fixed;bottom:0;left:0;right:0;background:var(--bottom);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:12px;border-top:1px solid var(--border);z-index:100;transition:background .3s}
-.bottom-wrap{max-width:600px;margin:auto;display:flex;gap:10px}
-.btn{flex:1;padding:14px;border:none;border-radius:14px;font-weight:800;font-size:15px;cursor:pointer}
-.btn-primary{background:var(--primary);color:#fff;box-shadow:0 8px 20px rgba(13,110,253,.25)}
-.btn-primary:disabled{opacity:.5;cursor:not-allowed}
-.btn-secondary{background:var(--primary-light);color:var(--primary);border:1.5px solid var(--primary-border)}
-
-/* USER INFO */
-#userInfo{display:none;align-items:center;gap:8px;background:var(--primary-light);border:1px solid var(--primary-border);border-radius:12px;padding:8px 12px;margin-bottom:12px}
-#userInfo.show{display:flex}
-#userAvatar{width:28px;height:28px;border-radius:50%;object-fit:cover}
-#userName{font-size:13px;font-weight:700;flex:1;color:var(--text)}
-#logoutBtn{border:none;background:none;color:var(--sub);font-size:18px;cursor:pointer;padding:2px}
-
-/* TOAST */
-#toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:#1f2a44;color:#fff;padding:10px 20px;border-radius:12px;font-size:14px;font-weight:700;z-index:999;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;white-space:nowrap}
-#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-</style>
-</head>
-<body>
-
-<div id="toast"></div>
-
-<div class="container">
-  <div class="top-bar">
-    <div class="top-bar-left">
-      <button class="icon-btn" id="backBtn" onclick="goBack()" style="display:none"><i class="bi bi-arrow-right"></i></button>
-      <h1>📁 ملفات PDF</h1>
-    </div>
-    <button class="icon-btn" id="darkBtn" onclick="toggleDark()">🌙</button>
-  </div>
-
-  <!-- USER INFO -->
-  <div id="userInfo">
-    <img id="userAvatar" src="" alt="">
-    <span id="userName"></span>
-    <button id="logoutBtn" onclick="signOut()" title="تسجيل الخروج"><i class="bi bi-box-arrow-right"></i></button>
-  </div>
-
-  <!-- BREADCRUMB -->
-  <div id="breadcrumb"></div>
-
-  <!-- TOOLBAR -->
-  <div id="toolbar">
-    <button class="mini-btn" onclick="selectAll()">تحديد الكل</button>
-    <button class="mini-btn" onclick="clearSel()">إلغاء التحديد</button>
-    <button class="mini-btn" id="autoRefreshBtn" onclick="toggleAutoRefresh()">🔄 تلقائي (إيقاف)</button>
-    <span class="sel-count" id="selCount">0 محدد</span>
-    <span class="refresh-badge" id="refreshStatus"></span>
-  </div>
-
-  <!-- LOGIN CARD -->
-  <div id="loginCard">
-    <div class="login-icon">📂</div>
-    <div class="login-title">ملفات Google Drive</div>
-    <div class="login-sub">سجل دخول بحساب Google لتصفح ملفاتك وإرسالها</div>
-    <button class="google-btn" onclick="signIn()">
-      <img src="https://www.google.com/favicon.ico" alt="Google">
-      تسجيل الدخول بـ Google
-    </button>
-  </div>
-
-  <!-- FILES LIST -->
-  <div id="filesList" style="display:none"></div>
-</div>
-
-<!-- BOTTOM BAR -->
-<div class="bottom-bar" id="bottomBar" style="display:none">
-  <div class="bottom-wrap">
-    <button class="btn btn-secondary" onclick="clearSel()">إلغاء التحديد</button>
-    <button class="btn btn-primary" id="sendBtn" onclick="sendSelected()" disabled>إرسال المحدد (0)</button>
-  </div>
-</div>
-
-<!-- Google API -->
-<script src="https://apis.google.com/js/api.js"></script>
-<script src="https://accounts.google.com/gsi/client"></script>
-
-<script>
-const CLIENT_ID = "503826285883-45mi9qcd6vldrkbanu6me6fpqg5dghqs.apps.googleusercontent.com";
-const API_KEY   = "AIzaSyDwMM73FaT5snh18bs1WEE1A5pnXlGaD1M";
-const SCOPES    = "https://www.googleapis.com/auth/drive.readonly";
-const TARGET_FOLDER = "PDF- Cloud Drive";
-
-let tokenClient, accessToken = null;
-let folderStack = []; // [{id, name}]
-let currentFiles = [];
-let selectedIds = new Set();
-let autoRefreshInterval = null;
-let autoRefreshActive = false;
-let isLoading = false;
-
-// ===== DARK MODE =====
-function initDark(){
-  if(localStorage.getItem("dm")==="1"){ document.body.classList.add("dark"); document.getElementById("darkBtn").textContent="☀️"; }
-}
-function toggleDark(){
-  const d = document.body.classList.toggle("dark");
-  localStorage.setItem("dm", d?"1":"0");
-  document.getElementById("darkBtn").textContent = d?"☀️":"🌙";
-}
-initDark();
-
-// ===== TOAST =====
-function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2500); }
-
-// ===== AUTO REFRESH LOGIC =====
-function toggleAutoRefresh(){
-  if(autoRefreshActive){
-    stopAutoRefresh();
-  } else {
-    startAutoRefresh();
-  }
-}
-
-function startAutoRefresh(){
-  if(autoRefreshInterval) clearInterval(autoRefreshInterval);
-  autoRefreshActive = true;
-  autoRefreshInterval = setInterval(async () => {
-    if(!accessToken || folderStack.length===0 || isLoading) return;
-    await refreshCurrentFolderSilently();
-  }, 1000); // كل ثانية واحدة
-  document.getElementById("autoRefreshBtn").textContent = "🔄 تلقائي (تشغيل)";
-  document.getElementById("autoRefreshBtn").classList.add("active");
-  document.getElementById("refreshStatus").textContent = "تحديث كل 1ث";
-  toast("✅ التحديث التلقائي كل ثانية مفعل");
-}
-
-function stopAutoRefresh(){
-  if(autoRefreshInterval){
-    clearInterval(autoRefreshInterval);
-    autoRefreshInterval = null;
-  }
-  autoRefreshActive = false;
-  document.getElementById("autoRefreshBtn").textContent = "🔄 تلقائي (إيقاف)";
-  document.getElementById("autoRefreshBtn").classList.remove("active");
-  document.getElementById("refreshStatus").textContent = "";
-  toast("⏸️ تم إيقاف التحديث التلقائي");
-}
-
-async function refreshCurrentFolderSilently(){
-  if(!accessToken || folderStack.length===0) return;
-  const folderId = folderStack[folderStack.length-1].id;
-  try{
-    isLoading = true;
-    gapi.client.setToken({access_token: accessToken});
-    const res = await gapi.client.drive.files.list({
-      q: `'${folderId}' in parents and trashed=false`,
-      fields: "files(id,name,mimeType,size,modifiedTime,iconLink)",
-      orderBy: "modifiedTime desc",  // 🔄 الأحدث أولاً
-      pageSize: 100
-    });
-    const newFiles = res.result.files || [];
-    // الحفاظ على التحديدات القديمة (للملفات التي مازالت موجودة)
-    const newSelected = new Set();
-    for(const f of newFiles){
-      if(selectedIds.has(f.id)){
-        newSelected.add(f.id);
-      }
-    }
-    selectedIds = newSelected;
-    currentFiles = newFiles;
-    renderFiles();
-    updateSendBtn();
-  }catch(e){
-    console.warn("Auto refresh error", e);
-    if(e.status===401){
-      stopAutoRefresh();
-      toast("انتهت الجلسة، سجل دخول مجدداً");
-      signOut();
-    }
-  }finally{
-    isLoading = false;
-  }
-}
-
-// ===== INIT GAPI =====
-function initGapi(){
-  gapi.load("client", async ()=>{
-    await gapi.client.init({ apiKey: API_KEY, discoveryDocs:["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"] });
-    tokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: CLIENT_ID,
-      scope: SCOPES,
-      callback: async (resp)=>{
-        if(resp.error){ toast("فشل تسجيل الدخول"); return; }
-        accessToken = resp.access_token;
-        await fetchUserInfo();
-        await findTargetFolder();
-      }
-    });
-    const saved = sessionStorage.getItem("gtoken");
-    if(saved){ accessToken=saved; gapi.client.setToken({access_token:saved}); fetchUserInfo().then(()=>findTargetFolder()); }
-  });
-}
-
-async function fetchUserInfo(){
-  try{
-    const r = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", { headers:{Authorization:"Bearer "+accessToken} });
-    const u = await r.json();
-    document.getElementById("userAvatar").src = u.picture||"";
-    document.getElementById("userName").textContent = u.name||u.email||"";
-    document.getElementById("userInfo").classList.add("show");
-  }catch{}
-}
-
-function signIn(){
-  if(!tokenClient){ toast("جاري التهيئة..."); setTimeout(signIn,1000); return; }
-  tokenClient.requestAccessToken({ prompt: "" });
-}
-
-function signOut(){
-  if(autoRefreshActive) stopAutoRefresh();
-  google.accounts.oauth2.revoke(accessToken, ()=>{});
-  accessToken=null; sessionStorage.removeItem("gtoken");
-  selectedIds.clear(); currentFiles=[]; folderStack=[];
-  document.getElementById("loginCard").style.display="flex";
-  document.getElementById("filesList").style.display="none";
-  document.getElementById("userInfo").classList.remove("show");
-  document.getElementById("toolbar").classList.remove("show");
-  document.getElementById("bottomBar").style.display="none";
-  document.getElementById("breadcrumb").innerHTML="";
-  document.getElementById("backBtn").style.display="none";
-  document.getElementById("refreshStatus").textContent = "";
-  toast("تم تسجيل الخروج");
-}
-
-// ===== FIND TARGET FOLDER =====
-async function findTargetFolder(){
-  showLoading();
-  try{
-    gapi.client.setToken({access_token: accessToken});
-    sessionStorage.setItem("gtoken", accessToken);
-
-    const res = await gapi.client.drive.files.list({
-      q: `name='${TARGET_FOLDER}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-      fields: "files(id,name)",
-      pageSize: 5
-    });
-    const files = res.result.files || [];
-    if(!files.length){
-      toast("ما لكيت المجلد، يعرض My Drive");
-      folderStack = [{id:"root", name:"My Drive"}];
-      loadFolder("root");
-      return;
-    }
-    const folder = files[0];
-    folderStack = [{id:"root", name:"My Drive"}, {id:folder.id, name:folder.name}];
-    loadFolder(folder.id);
-  }catch(e){
-    console.error(e);
-    if(e.status===401){ toast("انتهت الجلسة، سجل دخول مجدداً"); signOut(); return; }
-    toast("صار خطأ: "+( e.result?.error?.message||e.message||"غير معروف"));
-    hideLoading();
-  }
-}
-
-// ===== LOAD FOLDER =====
-async function loadFolder(folderId){
-  if(autoRefreshActive) stopAutoRefresh();
-  showLoading();
-  selectedIds.clear();
-  updateSendBtn();
-  try{
-    gapi.client.setToken({access_token: accessToken});
-    const res = await gapi.client.drive.files.list({
-      q: `'${folderId}' in parents and trashed=false`,
-      fields: "files(id,name,mimeType,size,modifiedTime,iconLink)",
-      orderBy: "modifiedTime desc",  // 🔄 الأحدث أولاً
-      pageSize: 100
-    });
-    currentFiles = res.result.files || [];
-    renderFiles();
-    renderBreadcrumb();
-    document.getElementById("loginCard").style.display="none";
-    document.getElementById("filesList").style.display="block";
-    document.getElementById("toolbar").classList.add("show");
-    document.getElementById("backBtn").style.display = folderStack.length>1?"flex":"none";
-    if(autoRefreshActive){
-      startAutoRefresh();
-    }
-  }catch(e){
-    console.error(e);
-    if(e.status===401){ toast("انتهت الجلسة، سجل دخول مجدداً"); signOut(); return; }
-    toast("صار خطأ بتحميل الملفات");
-  }
-  hideLoading();
-}
-
-// ===== RENDER =====
-function renderFiles(){
-  const wrap = document.getElementById("filesList");
-  if(!currentFiles.length){ wrap.innerHTML='<div class="empty-box">ماكو ملفات هنا</div>'; return; }
-  wrap.innerHTML = currentFiles.map((f,i)=>{
-    const isFolder = f.mimeType==="application/vnd.google-apps.folder";
-    const isPdf = f.name?.toLowerCase().endsWith(".pdf");
-    const checked = selectedIds.has(f.id);
-    const size = f.size ? formatSize(Number(f.size)) : "";
-    const date = f.modifiedTime ? new Date(f.modifiedTime).toLocaleDateString("ar") : "";
-    return `<div class="file-card${checked?" selected":""}" data-idx="${i}" onclick="toggleFile(${i})">
-      <input type="checkbox" class="file-check" ${checked?"checked":""} onclick="event.stopPropagation();toggleFile(${i})">
-      <div class="file-icon${isFolder?" folder":""}">
-        <i class="bi ${isFolder?"bi-folder-fill":isPdf?"bi-file-earmark-pdf-fill":"bi-file-earmark-fill"}"></i>
-      </div>
-      <div class="file-info">
-        <div class="file-name">${esc(f.name)}</div>
-        <div class="file-meta">${size}${size&&date?" • ":""}${date}</div>
-      </div>
-      ${isFolder?`<i class="bi bi-chevron-left file-arrow"></i>`:""}
-    </div>`;
-  }).join("");
-
-  wrap.querySelectorAll(".file-card").forEach((card,i)=>{
-    const f = currentFiles[i];
-    if(f.mimeType==="application/vnd.google-apps.folder"){
-      card.onclick = (e)=>{ e.stopPropagation(); openFolder(f); };
-      card.querySelector(".file-check").onclick = (e)=>{ e.stopPropagation(); toggleFile(i); };
-    }
-  });
-}
-
-function renderBreadcrumb(){
-  const bc = document.getElementById("breadcrumb");
-  bc.innerHTML = folderStack.map((f,i)=>{
-    const isLast = i===folderStack.length-1;
-    return `<span class="crumb${isLast?" active":""}" onclick="jumpTo(${i})">${esc(f.name)}</span>${!isLast?'<span class="crumb-sep"><i class="bi bi-chevron-left"></i></span>':""}`;
-  }).join("");
-}
-
-function openFolder(f){
-  if(autoRefreshActive) stopAutoRefresh();
-  folderStack.push({id:f.id, name:f.name});
-  loadFolder(f.id);
-}
-
-function goBack(){
-  if(folderStack.length<=1) return;
-  if(autoRefreshActive) stopAutoRefresh();
-  folderStack.pop();
-  loadFolder(folderStack[folderStack.length-1].id);
-}
-window.goBack = goBack;
-
-function jumpTo(idx){
-  if(autoRefreshActive) stopAutoRefresh();
-  folderStack = folderStack.slice(0, idx+1);
-  loadFolder(folderStack[folderStack.length-1].id);
-}
-
-// ===== SELECTION =====
-function toggleFile(idx){
-  const f = currentFiles[idx];
-  if(f.mimeType==="application/vnd.google-apps.folder") return;
-  selectedIds.has(f.id)?selectedIds.delete(f.id):selectedIds.add(f.id);
-  updateSendBtn();
-  renderFiles();
-}
-
-function selectAll(){
-  currentFiles.forEach(f=>{ if(f.mimeType!=="application/vnd.google-apps.folder") selectedIds.add(f.id); });
-  updateSendBtn(); renderFiles();
-}
-
-function clearSel(){
-  selectedIds.clear(); updateSendBtn(); renderFiles();
-}
-
-function updateSendBtn(){
-  const count = selectedIds.size;
-  const btn = document.getElementById("sendBtn");
-  btn.disabled = !count;
-  btn.textContent = count?`إرسال المحدد (${count})`:"إرسال المحدد";
-  document.getElementById("selCount").textContent = count+" محدد";
-  document.getElementById("bottomBar").style.display = count?"block":"none";
-}
-
-// ===== SEND =====
 async function sendSelected(){
   const toSend = currentFiles.filter(f=>selectedIds.has(f.id));
   if(!toSend.length) return;
 
-  toast("جاري تحضير الملفات...");
+  // منع الضغط المتكرر
+  const sendBtn = document.getElementById("sendBtn");
+  if(sendBtn.disabled && sendBtn.textContent.includes("جاري")) return;
+  
+  toast(`بدء تحضير ${toSend.length} ملفات...`);
+  sendBtn.disabled = true;
+  sendBtn.textContent = "⏳ جاري التحضير...";
+  
   const files = [];
-
-  for(const f of toSend){
+  let successCount = 0;
+  let failCount = 0;
+  
+  // 1. تحميل كل ملف بمهلة زمنية وتفادي تجميد المتصفح
+  for(let i = 0; i < toSend.length; i++){
+    const f = toSend[i];
+    // تحديث النص لإظهار التقدم
+    sendBtn.textContent = `⏳ جاري تحميل ${i+1}/${toSend.length}: ${f.name.substring(0,20)}...`;
+    
     try{
+      // مهلة 15 ثانية لكل ملف
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      
       const res = await fetch(
         `https://www.googleapis.com/drive/v3/files/${f.id}?alt=media`,
-        { headers:{ Authorization:"Bearer "+accessToken } }
+        { 
+          headers:{ Authorization:"Bearer "+accessToken },
+          signal: controller.signal
+        }
       );
-      if(!res.ok) throw new Error("فشل التحميل");
+      clearTimeout(timeoutId);
+      
+      if(!res.ok) throw new Error(`HTTP ${res.status}`);
       const blob = await res.blob();
-      const file = new File([blob], f.name, {type: blob.type||"application/pdf"});
+      if(blob.size === 0) throw new Error("الملف فارغ");
+      
+      const file = new File([blob], f.name, {type: blob.type || "application/octet-stream"});
       files.push(file);
+      successCount++;
+      
+      // راحة قصيرة بين الملفات حتى لا نضغط على API
+      await new Promise(r => setTimeout(r, 200));
+      
     }catch(e){
-      toast("فشل تحميل: "+f.name);
-      console.error(e);
+      failCount++;
+      console.error(`فشل تحميل ${f.name}:`, e);
+      toast(`❌ فشل: ${f.name.substring(0, 30)} - ${e.message || "خطأ"}`);
     }
   }
-
-  if(!files.length){ toast("ما في ملفات للإرسال"); return; }
-
+  
+  // إعادة تفعيل الزر
+  sendBtn.disabled = false;
+  
+  if(files.length === 0){
+    sendBtn.textContent = `إرسال المحدد (0)`;
+    toast("⚠️ لم يتم تحميل أي ملف بنجاح");
+    return;
+  }
+  
+  toast(`✅ تم تحميل ${files.length} ملف بنجاح (فشل: ${failCount})، جاري الإرسال...`);
+  sendBtn.textContent = `📤 إرسال (${files.length})`;
+  
+  // 2. محاولة المشاركة أو التحميل
   try{
+    // محاولة المشاركة أولاً إذا كانت المدعومة
     if(navigator.canShare && navigator.canShare({files})){
-      await navigator.share({ files, title:"ملفات PDF", text:"الملفات المحددة" });
-      clearSel();
-    }else{
-      files.forEach(file=>{
-        const url = URL.createObjectURL(file);
-        const a = document.createElement("a");
-        a.href=url; a.download=file.name; a.click();
-        setTimeout(()=>URL.revokeObjectURL(url),3000);
+      await navigator.share({ 
+        files, 
+        title: "ملفات PDF", 
+        text: `تم اختيار ${files.length} ملف(ات)`
       });
+      toast("✅ تمت المشاركة بنجاح");
+      clearSel(); // مسح التحديد بعد الإرسال
+    } 
+    else {
+      // الحل البديل: تحميل الملفات كأرشفة ZIP أو فردية
+      if(files.length === 1){
+        // ملف واحد - تحميل مباشر
+        const url = URL.createObjectURL(files[0]);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = files[0].name;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+        toast("✅ تم تحميل الملف");
+        clearSel();
+      } 
+      else if(files.length <= 5){
+        // ملفات قليلة - تحميل متتابع
+        toast(`جاري تحميل ${files.length} ملفات...`);
+        for(let file of files){
+          const url = URL.createObjectURL(file);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = file.name;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(url), 3000);
+          await new Promise(r => setTimeout(r, 500)); // تأخير بين التحميلات
+        }
+        toast("✅ تم تحميل جميع الملفات");
+        clearSel();
+      }
+      else {
+        // ملفات كثيرة: نعرض قائمة للضغط اليدوي
+        toast(`⚠️ لا يمكن مشاركة ${files.length} ملف دفعة واحدة. سيتم فتح نافذة لتحميلها يدوياً.`);
+        let msg = "لإرسال هذه الملفات، يمكنك:\n\n";
+        files.forEach((f, idx) => {
+          msg += `${idx+1}. ${f.name}\n`;
+        });
+        msg += "\nسيتم الآن فتح نافذة مشاركة النظام (إذا كانت مدعومة) أو تحميلها واحداً تلو الآخر.";
+        alert(msg);
+        
+        // محاولة أخيرة: مشاركة أول ملف فقط كنموذج
+        if(files.length > 0 && navigator.canShare && navigator.canShare({files: [files[0]]})){
+          await navigator.share({ files: [files[0]], title: "ملف PDF نموذج" });
+          toast("تمت مشاركة الملف الأول، يمكنك إعادة المحاولة للملفات الأخرى");
+        } else {
+          // أسوأ حالة: تحميل الكل مع تحذير
+          for(let file of files){
+            const url = URL.createObjectURL(file);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = file.name;
+            a.click();
+            await new Promise(r => setTimeout(r, 800));
+            URL.revokeObjectURL(url);
+          }
+          toast(`تم تحميل ${files.length} ملف (تحقق من مجلد التنزيلات)`);
+          clearSel();
+        }
+      }
     }
-  }catch(e){
-    if(e?.name!=="AbortError") toast("صار خطأ بالمشاركة");
+  } catch(shareErr) {
+    console.error("خطأ في المشاركة:", shareErr);
+    if(shareErr.name !== "AbortError"){
+      toast(`⚠️ حدث خطأ أثناء المشاركة: ${shareErr.message || "غير معروف"}`);
+      // محاولة التحميل كبديل أخير
+      if(files.length === 1){
+        const url = URL.createObjectURL(files[0]);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = files[0].name;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 3000);
+        toast("تم تحميل الملف كبديل");
+        clearSel();
+      } else {
+        toast("❌ لم نتمكن من إرسال الملفات. حاول مرة أخرى بعد فترة.");
+      }
+    }
   }
+  
+  // إعادة ضبط الزر
+  sendBtn.disabled = false;
+  sendBtn.textContent = selectedIds.size ? `إرسال المحدد (${selectedIds.size})` : "إرسال المحدد";
 }
-
-// ===== HELPERS =====
-function showLoading(){
-  const wrap = document.getElementById("filesList");
-  wrap.style.display="block";
-  wrap.innerHTML = [1,2,3,4,5].map(()=>'<div class="skeleton"></div>').join("");
-  document.getElementById("loginCard").style.display="none";
-}
-function hideLoading(){}
-function formatSize(b){ if(b<1024) return b+" B"; if(b<1048576) return (b/1024).toFixed(1)+" KB"; if(b<1073741824) return (b/1048576).toFixed(1)+" MB"; return (b/1073741824).toFixed(1)+" GB"; }
-function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
-
-window.signIn=signIn; window.signOut=signOut; window.toggleFile=toggleFile;
-window.selectAll=selectAll; window.clearSel=clearSel; window.sendSelected=sendSelected;
-window.jumpTo=jumpTo; window.toggleDark=toggleDark; window.toggleAutoRefresh=toggleAutoRefresh;
-
-window.onload = () => {
-  initGapi();
-};
-</script>
-</body>
-</html>
