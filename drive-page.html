@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>ملفات PDF</title>
+<title>ملفات PDF - تحديث تلقائي</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="ملفات PDF">
@@ -46,7 +46,9 @@ body{background:var(--bg);color:var(--text);transition:background .3s,color .3s;
 .mini-btn{border:none;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:800;cursor:pointer;background:var(--primary-light);color:var(--primary);border:1px solid var(--primary-border);transition:background .3s}
 .mini-btn.danger{background:#fbe7e7;color:#b42318;border-color:#fecaca}
 body.dark .mini-btn.danger{background:#2d1515;color:#f87171;border-color:#4a1a1a}
+.mini-btn.active{background:var(--primary);color:white;border-color:var(--primary);}
 .sel-count{font-size:13px;font-weight:800;color:var(--sub);padding:9px 4px}
+.refresh-badge{font-size:11px;background:var(--card);border-radius:20px;padding:2px 8px;margin-right:6px;color:var(--sub);font-weight:normal;}
 
 /* FILE LIST */
 #filesList{overflow-y:auto;height:calc(100vh - 200px)}
@@ -118,7 +120,9 @@ body.dark .mini-btn.danger{background:#2d1515;color:#f87171;border-color:#4a1a1a
   <div id="toolbar">
     <button class="mini-btn" onclick="selectAll()">تحديد الكل</button>
     <button class="mini-btn" onclick="clearSel()">إلغاء التحديد</button>
+    <button class="mini-btn" id="autoRefreshBtn" onclick="toggleAutoRefresh()">🔄 تلقائي (إيقاف)</button>
     <span class="sel-count" id="selCount">0 محدد</span>
+    <span class="refresh-badge" id="refreshStatus"></span>
   </div>
 
   <!-- LOGIN CARD -->
@@ -158,6 +162,9 @@ let tokenClient, accessToken = null;
 let folderStack = []; // [{id, name}]
 let currentFiles = [];
 let selectedIds = new Set();
+let autoRefreshInterval = null;
+let autoRefreshActive = false;
+let isLoading = false;
 
 // ===== DARK MODE =====
 function initDark(){
@@ -173,6 +180,77 @@ initDark();
 // ===== TOAST =====
 function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2500); }
 
+// ===== AUTO REFRESH LOGIC =====
+function toggleAutoRefresh(){
+  if(autoRefreshActive){
+    stopAutoRefresh();
+  } else {
+    startAutoRefresh();
+  }
+}
+
+function startAutoRefresh(){
+  if(autoRefreshInterval) clearInterval(autoRefreshInterval);
+  autoRefreshActive = true;
+  autoRefreshInterval = setInterval(async () => {
+    if(!accessToken || folderStack.length===0 || isLoading) return;
+    await refreshCurrentFolderSilently();
+  }, 1000); // كل ثانية واحدة
+  document.getElementById("autoRefreshBtn").textContent = "🔄 تلقائي (تشغيل)";
+  document.getElementById("autoRefreshBtn").classList.add("active");
+  document.getElementById("refreshStatus").textContent = "تحديث كل 1ث";
+  toast("✅ التحديث التلقائي كل ثانية مفعل");
+}
+
+function stopAutoRefresh(){
+  if(autoRefreshInterval){
+    clearInterval(autoRefreshInterval);
+    autoRefreshInterval = null;
+  }
+  autoRefreshActive = false;
+  document.getElementById("autoRefreshBtn").textContent = "🔄 تلقائي (إيقاف)";
+  document.getElementById("autoRefreshBtn").classList.remove("active");
+  document.getElementById("refreshStatus").textContent = "";
+  toast("⏸️ تم إيقاف التحديث التلقائي");
+}
+
+async function refreshCurrentFolderSilently(){
+  if(!accessToken || folderStack.length===0) return;
+  const folderId = folderStack[folderStack.length-1].id;
+  try{
+    isLoading = true;
+    gapi.client.setToken({access_token: accessToken});
+    const res = await gapi.client.drive.files.list({
+      q: `'${folderId}' in parents and trashed=false`,
+      fields: "files(id,name,mimeType,size,modifiedTime,iconLink)",
+      orderBy: "name",
+      pageSize: 100
+    });
+    const newFiles = res.result.files || [];
+    // الحفاظ على التحديدات القديمة (للملفات التي مازالت موجودة)
+    const newSelected = new Set();
+    for(const f of newFiles){
+      if(selectedIds.has(f.id)){
+        newSelected.add(f.id);
+      }
+    }
+    selectedIds = newSelected;
+    currentFiles = newFiles;
+    renderFiles();
+    updateSendBtn();
+    // لا نغير breadcrumb ولا نخفي لوحة الدخول
+  }catch(e){
+    console.warn("Auto refresh error", e);
+    if(e.status===401){
+      stopAutoRefresh();
+      toast("انتهت الجلسة، سجل دخول مجدداً");
+      signOut();
+    }
+  }finally{
+    isLoading = false;
+  }
+}
+
 // ===== INIT GAPI =====
 function initGapi(){
   gapi.load("client", async ()=>{
@@ -187,7 +265,6 @@ function initGapi(){
         await findTargetFolder();
       }
     });
-    // اذا في توكن محفوظ جربه
     const saved = sessionStorage.getItem("gtoken");
     if(saved){ accessToken=saved; gapi.client.setToken({access_token:saved}); fetchUserInfo().then(()=>findTargetFolder()); }
   });
@@ -205,12 +282,11 @@ async function fetchUserInfo(){
 
 function signIn(){
   if(!tokenClient){ toast("جاري التهيئة..."); setTimeout(signIn,1000); return; }
-  tokenClient.requestAccessToken({
-  prompt: ""
-});
+  tokenClient.requestAccessToken({ prompt: "" });
 }
 
 function signOut(){
+  if(autoRefreshActive) stopAutoRefresh();
   google.accounts.oauth2.revoke(accessToken, ()=>{});
   accessToken=null; sessionStorage.removeItem("gtoken");
   selectedIds.clear(); currentFiles=[]; folderStack=[];
@@ -221,6 +297,7 @@ function signOut(){
   document.getElementById("bottomBar").style.display="none";
   document.getElementById("breadcrumb").innerHTML="";
   document.getElementById("backBtn").style.display="none";
+  document.getElementById("refreshStatus").textContent = "";
   toast("تم تسجيل الخروج");
 }
 
@@ -231,7 +308,6 @@ async function findTargetFolder(){
     gapi.client.setToken({access_token: accessToken});
     sessionStorage.setItem("gtoken", accessToken);
 
-    // ابحث عن المجلد باسمه
     const res = await gapi.client.drive.files.list({
       q: `name='${TARGET_FOLDER}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
       fields: "files(id,name)",
@@ -239,7 +315,6 @@ async function findTargetFolder(){
     });
     const files = res.result.files || [];
     if(!files.length){
-      // ما لكيناه - اعرض كل الملفات
       toast("ما لكيت المجلد، يعرض My Drive");
       folderStack = [{id:"root", name:"My Drive"}];
       loadFolder("root");
@@ -258,6 +333,7 @@ async function findTargetFolder(){
 
 // ===== LOAD FOLDER =====
 async function loadFolder(folderId){
+  if(autoRefreshActive) stopAutoRefresh();
   showLoading();
   selectedIds.clear();
   updateSendBtn();
@@ -276,6 +352,10 @@ async function loadFolder(folderId){
     document.getElementById("filesList").style.display="block";
     document.getElementById("toolbar").classList.add("show");
     document.getElementById("backBtn").style.display = folderStack.length>1?"flex":"none";
+    // إعادة تشغيل التحديث التلقائي إذا كان مفعلاً سابقاً
+    if(autoRefreshActive){
+      startAutoRefresh();
+    }
   }catch(e){
     console.error(e);
     if(e.status===401){ toast("انتهت الجلسة، سجل دخول مجدداً"); signOut(); return; }
@@ -307,7 +387,6 @@ function renderFiles(){
     </div>`;
   }).join("");
 
-  // folder click
   wrap.querySelectorAll(".file-card").forEach((card,i)=>{
     const f = currentFiles[i];
     if(f.mimeType==="application/vnd.google-apps.folder"){
@@ -326,18 +405,21 @@ function renderBreadcrumb(){
 }
 
 function openFolder(f){
+  if(autoRefreshActive) stopAutoRefresh();
   folderStack.push({id:f.id, name:f.name});
   loadFolder(f.id);
 }
 
 function goBack(){
   if(folderStack.length<=1) return;
+  if(autoRefreshActive) stopAutoRefresh();
   folderStack.pop();
   loadFolder(folderStack[folderStack.length-1].id);
 }
 window.goBack = goBack;
 
 function jumpTo(idx){
+  if(autoRefreshActive) stopAutoRefresh();
   folderStack = folderStack.slice(0, idx+1);
   loadFolder(folderStack[folderStack.length-1].id);
 }
@@ -400,7 +482,6 @@ async function sendSelected(){
       await navigator.share({ files, title:"ملفات PDF", text:"الملفات المحددة" });
       clearSel();
     }else{
-      // fallback: حمّل أول ملف
       files.forEach(file=>{
         const url = URL.createObjectURL(file);
         const a = document.createElement("a");
@@ -426,14 +507,12 @@ function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;")
 
 window.signIn=signIn; window.signOut=signOut; window.toggleFile=toggleFile;
 window.selectAll=selectAll; window.clearSel=clearSel; window.sendSelected=sendSelected;
-window.jumpTo=jumpTo; window.toggleDark=toggleDark;
+window.jumpTo=jumpTo; window.toggleDark=toggleDark; window.toggleAutoRefresh=toggleAutoRefresh;
 
 window.onload = () => {
   initGapi();
-
-  setTimeout(() => {
-    document.querySelector(".google-btn")?.click();
-  }, 2000);
+  // لا نضغط تلقائياً على زر تسجيل الدخول لأن بعض المتصفحات تمنع النوافذ المنبثقة بدون تفاعل المستخدم
+  // بدلاً من ذلك نعرض شاشة تسجيل الدخول بشكل طبيعي
 };
 </script>
 </body>
