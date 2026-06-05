@@ -104,24 +104,20 @@ body.dark .mini-btn.danger{background:#2d1515;color:#f87171;border-color:#4a1a1a
     <button class="icon-btn" id="darkBtn" onclick="toggleDark()">🌙</button>
   </div>
 
-  <!-- USER INFO -->
   <div id="userInfo">
     <img id="userAvatar" src="" alt="">
     <span id="userName"></span>
     <button id="logoutBtn" onclick="signOut()" title="تسجيل الخروج"><i class="bi bi-box-arrow-right"></i></button>
   </div>
 
-  <!-- BREADCRUMB -->
   <div id="breadcrumb"></div>
 
-  <!-- TOOLBAR -->
   <div id="toolbar">
     <button class="mini-btn" onclick="selectAll()">تحديد الكل</button>
     <button class="mini-btn" onclick="clearSel()">إلغاء التحديد</button>
     <span class="sel-count" id="selCount">0 محدد</span>
   </div>
 
-  <!-- LOGIN CARD -->
   <div id="loginCard">
     <div class="login-icon">📂</div>
     <div class="login-title">ملفات Google Drive</div>
@@ -132,11 +128,9 @@ body.dark .mini-btn.danger{background:#2d1515;color:#f87171;border-color:#4a1a1a
     </button>
   </div>
 
-  <!-- FILES LIST -->
   <div id="filesList" style="display:none"></div>
 </div>
 
-<!-- BOTTOM BAR -->
 <div class="bottom-bar" id="bottomBar" style="display:none">
   <div class="bottom-wrap">
     <button class="btn btn-secondary" onclick="clearSel()">إلغاء التحديد</button>
@@ -144,7 +138,6 @@ body.dark .mini-btn.danger{background:#2d1515;color:#f87171;border-color:#4a1a1a
   </div>
 </div>
 
-<!-- Google API -->
 <script src="https://apis.google.com/js/api.js"></script>
 <script src="https://accounts.google.com/gsi/client"></script>
 
@@ -155,112 +148,146 @@ const SCOPES    = "https://www.googleapis.com/auth/drive.readonly";
 const TARGET_FOLDER = "PDF- Cloud Drive";
 
 let tokenClient, accessToken = null;
-let folderStack = []; // [{id, name}]
+let folderStack = [];
 let currentFiles = [];
 let selectedIds = new Set();
 
-// ===== DARK MODE =====
-function initDark(){
-  if(localStorage.getItem("dm")==="1"){ document.body.classList.add("dark"); document.getElementById("darkBtn").textContent="☀️"; }
+// حفظ واسترجاع التوكين مع وقت الانتهاء
+function saveToken(token, expiresInSec = 3600) {
+  const expiry = Date.now() + (expiresInSec * 1000);
+  localStorage.setItem("gtoken", token);
+  localStorage.setItem("gtoken_expiry", expiry);
 }
-function toggleDark(){
-  const d = document.body.classList.toggle("dark");
-  localStorage.setItem("dm", d?"1":"0");
-  document.getElementById("darkBtn").textContent = d?"☀️":"🌙";
+function loadToken() {
+  const token = localStorage.getItem("gtoken");
+  const expiry = parseInt(localStorage.getItem("gtoken_expiry") || "0");
+  if (token && expiry > Date.now()) {
+    accessToken = token;
+    gapi.client.setToken({ access_token: token });
+    return true;
+  }
+  // التوكين منتهي أو غير موجود
+  localStorage.removeItem("gtoken");
+  localStorage.removeItem("gtoken_expiry");
+  return false;
 }
-initDark();
+function clearToken() {
+  localStorage.removeItem("gtoken");
+  localStorage.removeItem("gtoken_expiry");
+  accessToken = null;
+}
 
-// ===== TOAST =====
-function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2500); }
-
-// ===== INIT GAPI =====
-function initGapi(){
-  gapi.load("client", async ()=>{
-    await gapi.client.init({ apiKey: API_KEY, discoveryDocs:["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"] });
+function initGapi() {
+  gapi.load("client", async () => {
+    await gapi.client.init({ apiKey: API_KEY, discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"] });
     tokenClient = google.accounts.oauth2.initTokenClient({
       client_id: CLIENT_ID,
       scope: SCOPES,
-      callback: async (resp)=>{
-        if(resp.error){ toast("فشل تسجيل الدخول"); return; }
+      callback: async (resp) => {
+        if (resp.error) { toast("فشل تسجيل الدخول"); return; }
         accessToken = resp.access_token;
+        saveToken(accessToken, 3600);
         await fetchUserInfo();
         await findTargetFolder();
       }
     });
-    // اذا في توكن محفوظ جربه
-    const saved = sessionStorage.getItem("gtoken");
-    if(saved){ accessToken=saved; gapi.client.setToken({access_token:saved}); fetchUserInfo().then(()=>findTargetFolder()); }
+    // محاولة استعادة توكين سابق
+    if (loadToken()) {
+      // تحقق من صلاحيته بمحاولة جلب معلومات المستخدم
+      fetchUserInfo().then(() => findTargetFolder()).catch(() => {
+        // التوكين غير صالح، نطلب توكين جديد بصمت
+        trySilentToken();
+      });
+    }
   });
 }
 
-async function fetchUserInfo(){
-  try{
-    const r = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", { headers:{Authorization:"Bearer "+accessToken} });
-    const u = await r.json();
-    document.getElementById("userAvatar").src = u.picture||"";
-    document.getElementById("userName").textContent = u.name||u.email||"";
-    document.getElementById("userInfo").classList.add("show");
-  }catch{}
+async function trySilentToken() {
+  if (!tokenClient) return;
+  try {
+    // محاولة الحصول على توكين بدون تفاعل (إذا كان هناك جلسة سابقة)
+    tokenClient.requestAccessToken({ prompt: '' });
+  } catch (e) {
+    // فشل، نعرض واجهة الدخول
+    showLoginUI();
+  }
 }
 
-function signIn(){
-  if(!tokenClient){ toast("جاري التهيئة..."); setTimeout(signIn,1000); return; }
+async function fetchUserInfo() {
+  const r = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", { headers: { Authorization: "Bearer " + accessToken } });
+  if (!r.ok) throw new Error("Invalid token");
+  const u = await r.json();
+  document.getElementById("userAvatar").src = u.picture || "";
+  document.getElementById("userName").textContent = u.name || u.email || "";
+  document.getElementById("userInfo").classList.add("show");
+}
+
+function signIn() {
+  if (!tokenClient) { toast("جاري التهيئة..."); setTimeout(signIn, 1000); return; }
   tokenClient.requestAccessToken();
 }
 
-function signOut(){
-  google.accounts.oauth2.revoke(accessToken, ()=>{});
-  accessToken=null; sessionStorage.removeItem("gtoken");
-  selectedIds.clear(); currentFiles=[]; folderStack=[];
-  document.getElementById("loginCard").style.display="flex";
-  document.getElementById("filesList").style.display="none";
+function signOut() {
+  if (accessToken) google.accounts.oauth2.revoke(accessToken, () => {});
+  clearToken();
+  selectedIds.clear(); currentFiles = []; folderStack = [];
+  document.getElementById("loginCard").style.display = "flex";
+  document.getElementById("filesList").style.display = "none";
   document.getElementById("userInfo").classList.remove("show");
   document.getElementById("toolbar").classList.remove("show");
-  document.getElementById("bottomBar").style.display="none";
-  document.getElementById("breadcrumb").innerHTML="";
-  document.getElementById("backBtn").style.display="none";
+  document.getElementById("bottomBar").style.display = "none";
+  document.getElementById("breadcrumb").innerHTML = "";
+  document.getElementById("backBtn").style.display = "none";
   toast("تم تسجيل الخروج");
 }
 
-// ===== FIND TARGET FOLDER =====
-async function findTargetFolder(){
-  showLoading();
-  try{
-    gapi.client.setToken({access_token: accessToken});
-    sessionStorage.setItem("gtoken", accessToken);
+function showLoginUI() {
+  document.getElementById("loginCard").style.display = "flex";
+  document.getElementById("filesList").style.display = "none";
+  document.getElementById("userInfo").classList.remove("show");
+  document.getElementById("toolbar").classList.remove("show");
+  document.getElementById("bottomBar").style.display = "none";
+}
 
-    // ابحث عن المجلد باسمه
+async function findTargetFolder() {
+  showLoading();
+  try {
+    gapi.client.setToken({ access_token: accessToken });
+    // حفظ التوكين مجدداً للتأكيد
+    saveToken(accessToken);
     const res = await gapi.client.drive.files.list({
       q: `name='${TARGET_FOLDER}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
       fields: "files(id,name)",
       pageSize: 5
     });
     const files = res.result.files || [];
-    if(!files.length){
-      // ما لكيناه - اعرض كل الملفات
-      toast("ما لكيت المجلد، يعرض My Drive");
-      folderStack = [{id:"root", name:"My Drive"}];
+    if (!files.length) {
+      toast("ما لقيت المجلد، يعرض My Drive");
+      folderStack = [{ id: "root", name: "My Drive" }];
       loadFolder("root");
       return;
     }
     const folder = files[0];
-    folderStack = [{id:"root", name:"My Drive"}, {id:folder.id, name:folder.name}];
+    folderStack = [{ id: "root", name: "My Drive" }, { id: folder.id, name: folder.name }];
     loadFolder(folder.id);
-  }catch(e){
-    console.error(e);
-    if(e.status===401){ toast("انتهت الجلسة، سجل دخول مجدداً"); signOut(); return; }
-    toast("صار خطأ: "+( e.result?.error?.message||e.message||"غير معروف"));
+  } catch (e) {
+    if (e.status === 401) {
+      // التوكين انتهى، حاول بصمت
+      clearToken();
+      trySilentToken();
+      return;
+    }
+    toast("خطأ: " + (e.result?.error?.message || e.message || "غير معروف"));
     hideLoading();
   }
 }
 
-// ===== LOAD FOLDER =====
-async function loadFolder(folderId){
+async function loadFolder(folderId) {
   showLoading();
   selectedIds.clear();
   updateSendBtn();
-  try{
-    gapi.client.setToken({access_token: accessToken});
+  try {
+    gapi.client.setToken({ access_token: accessToken });
     const res = await gapi.client.drive.files.list({
       q: `'${folderId}' in parents and trashed=false`,
       fields: "files(id,name,mimeType,size,modifiedTime,iconLink)",
@@ -270,161 +297,151 @@ async function loadFolder(folderId){
     currentFiles = res.result.files || [];
     renderFiles();
     renderBreadcrumb();
-    document.getElementById("loginCard").style.display="none";
-    document.getElementById("filesList").style.display="block";
+    document.getElementById("loginCard").style.display = "none";
+    document.getElementById("filesList").style.display = "block";
     document.getElementById("toolbar").classList.add("show");
-    document.getElementById("backBtn").style.display = folderStack.length>1?"flex":"none";
-  }catch(e){
-    console.error(e);
-    if(e.status===401){ toast("انتهت الجلسة، سجل دخول مجدداً"); signOut(); return; }
-    toast("صار خطأ بتحميل الملفات");
+    document.getElementById("backBtn").style.display = folderStack.length > 1 ? "flex" : "none";
+  } catch (e) {
+    if (e.status === 401) {
+      clearToken();
+      trySilentToken();
+      return;
+    }
+    toast("خطأ بتحميل الملفات");
   }
   hideLoading();
 }
 
-// ===== RENDER =====
-function renderFiles(){
+// باقي الدوال (renderFiles, renderBreadcrumb, openFolder, goBack, jumpTo, toggleFile, selectAll, clearSel, updateSendBtn, sendSelected, helpers) كما هي بدون تغيير
+// لكن أنقلها كما في الكود الأصلي للحفاظ على الوظائف الكاملة.
+
+function renderFiles() {
   const wrap = document.getElementById("filesList");
-  if(!currentFiles.length){ wrap.innerHTML='<div class="empty-box">ماكو ملفات هنا</div>'; return; }
-  wrap.innerHTML = currentFiles.map((f,i)=>{
-    const isFolder = f.mimeType==="application/vnd.google-apps.folder";
+  if (!currentFiles.length) { wrap.innerHTML = '<div class="empty-box">ماكو ملفات هنا</div>'; return; }
+  wrap.innerHTML = currentFiles.map((f, i) => {
+    const isFolder = f.mimeType === "application/vnd.google-apps.folder";
     const isPdf = f.name?.toLowerCase().endsWith(".pdf");
     const checked = selectedIds.has(f.id);
     const size = f.size ? formatSize(Number(f.size)) : "";
     const date = f.modifiedTime ? new Date(f.modifiedTime).toLocaleDateString("ar") : "";
-    return `<div class="file-card${checked?" selected":""}" data-idx="${i}" onclick="toggleFile(${i})">
-      <input type="checkbox" class="file-check" ${checked?"checked":""} onclick="event.stopPropagation();toggleFile(${i})">
-      <div class="file-icon${isFolder?" folder":""}">
-        <i class="bi ${isFolder?"bi-folder-fill":isPdf?"bi-file-earmark-pdf-fill":"bi-file-earmark-fill"}"></i>
+    return `<div class="file-card${checked ? " selected" : ""}" data-idx="${i}" onclick="toggleFile(${i})">
+      <input type="checkbox" class="file-check" ${checked ? "checked" : ""} onclick="event.stopPropagation();toggleFile(${i})">
+      <div class="file-icon${isFolder ? " folder" : ""}">
+        <i class="bi ${isFolder ? "bi-folder-fill" : isPdf ? "bi-file-earmark-pdf-fill" : "bi-file-earmark-fill"}"></i>
       </div>
       <div class="file-info">
         <div class="file-name">${esc(f.name)}</div>
-        <div class="file-meta">${size}${size&&date?" • ":""}${date}</div>
+        <div class="file-meta">${size}${size && date ? " • " : ""}${date}</div>
       </div>
-      ${isFolder?`<i class="bi bi-chevron-left file-arrow"></i>`:""}
+      ${isFolder ? `<i class="bi bi-chevron-left file-arrow"></i>` : ""}
     </div>`;
   }).join("");
-
-  // folder click
-  wrap.querySelectorAll(".file-card").forEach((card,i)=>{
+  wrap.querySelectorAll(".file-card").forEach((card, i) => {
     const f = currentFiles[i];
-    if(f.mimeType==="application/vnd.google-apps.folder"){
-      card.onclick = (e)=>{ e.stopPropagation(); openFolder(f); };
-      card.querySelector(".file-check").onclick = (e)=>{ e.stopPropagation(); toggleFile(i); };
+    if (f.mimeType === "application/vnd.google-apps.folder") {
+      card.onclick = (e) => { e.stopPropagation(); openFolder(f); };
+      card.querySelector(".file-check").onclick = (e) => { e.stopPropagation(); toggleFile(i); };
     }
   });
 }
 
-function renderBreadcrumb(){
+function renderBreadcrumb() {
   const bc = document.getElementById("breadcrumb");
-  bc.innerHTML = folderStack.map((f,i)=>{
-    const isLast = i===folderStack.length-1;
-    return `<span class="crumb${isLast?" active":""}" onclick="jumpTo(${i})">${esc(f.name)}</span>${!isLast?'<span class="crumb-sep"><i class="bi bi-chevron-left"></i></span>':""}`;
+  bc.innerHTML = folderStack.map((f, i) => {
+    const isLast = i === folderStack.length - 1;
+    return `<span class="crumb${isLast ? " active" : ""}" onclick="jumpTo(${i})">${esc(f.name)}</span>${!isLast ? '<span class="crumb-sep"><i class="bi bi-chevron-left"></i></span>' : ""}`;
   }).join("");
 }
 
-function openFolder(f){
-  folderStack.push({id:f.id, name:f.name});
+function openFolder(f) {
+  folderStack.push({ id: f.id, name: f.name });
   loadFolder(f.id);
 }
 
-function goBack(){
-  if(folderStack.length<=1) return;
+function goBack() {
+  if (folderStack.length <= 1) return;
   folderStack.pop();
-  loadFolder(folderStack[folderStack.length-1].id);
+  loadFolder(folderStack[folderStack.length - 1].id);
 }
 window.goBack = goBack;
 
-function jumpTo(idx){
-  folderStack = folderStack.slice(0, idx+1);
-  loadFolder(folderStack[folderStack.length-1].id);
+function jumpTo(idx) {
+  folderStack = folderStack.slice(0, idx + 1);
+  loadFolder(folderStack[folderStack.length - 1].id);
 }
 
-// ===== SELECTION =====
-function toggleFile(idx){
+function toggleFile(idx) {
   const f = currentFiles[idx];
-  if(f.mimeType==="application/vnd.google-apps.folder") return;
-  selectedIds.has(f.id)?selectedIds.delete(f.id):selectedIds.add(f.id);
+  if (f.mimeType === "application/vnd.google-apps.folder") return;
+  selectedIds.has(f.id) ? selectedIds.delete(f.id) : selectedIds.add(f.id);
   updateSendBtn();
   renderFiles();
 }
 
-function selectAll(){
-  currentFiles.forEach(f=>{ if(f.mimeType!=="application/vnd.google-apps.folder") selectedIds.add(f.id); });
+function selectAll() {
+  currentFiles.forEach(f => { if (f.mimeType !== "application/vnd.google-apps.folder") selectedIds.add(f.id); });
   updateSendBtn(); renderFiles();
 }
 
-function clearSel(){
+function clearSel() {
   selectedIds.clear(); updateSendBtn(); renderFiles();
 }
 
-function updateSendBtn(){
+function updateSendBtn() {
   const count = selectedIds.size;
   const btn = document.getElementById("sendBtn");
   btn.disabled = !count;
-  btn.textContent = count?`إرسال المحدد (${count})`:"إرسال المحدد";
-  document.getElementById("selCount").textContent = count+" محدد";
-  document.getElementById("bottomBar").style.display = count?"block":"none";
+  btn.textContent = count ? `إرسال المحدد (${count})` : "إرسال المحدد";
+  document.getElementById("selCount").textContent = count + " محدد";
+  document.getElementById("bottomBar").style.display = count ? "block" : "none";
 }
 
-// ===== SEND (DOWNLOAD + SHARE) =====
-async function sendSelected(){
-  const toSend = currentFiles.filter(f=>selectedIds.has(f.id));
-  if(!toSend.length) return;
-
+async function sendSelected() {
+  const toSend = currentFiles.filter(f => selectedIds.has(f.id));
+  if (!toSend.length) return;
   toast("جاري تحضير الملفات...");
   const files = [];
-
-  for(const f of toSend){
-    try{
-      const res = await fetch(
-        `https://www.googleapis.com/drive/v3/files/${f.id}?alt=media`,
-        { headers:{ Authorization:"Bearer "+accessToken } }
-      );
-      if(!res.ok) throw new Error("فشل التحميل");
+  for (const f of toSend) {
+    try {
+      const res = await fetch(`https://www.googleapis.com/drive/v3/files/${f.id}?alt=media`, { headers: { Authorization: "Bearer " + accessToken } });
+      if (!res.ok) throw new Error("فشل التحميل");
       const blob = await res.blob();
-      const file = new File([blob], f.name, {type: blob.type||"application/pdf"});
+      const file = new File([blob], f.name, { type: blob.type || "application/pdf" });
       files.push(file);
-    }catch(e){
-      toast("فشل تحميل: "+f.name);
-      console.error(e);
-    }
+    } catch (e) { toast("فشل تحميل: " + f.name); }
   }
-
-  if(!files.length){ toast("ما في ملفات للإرسال"); return; }
-
-  try{
-    if(navigator.canShare && navigator.canShare({files})){
-      await navigator.share({ files, title:"ملفات PDF", text:"الملفات المحددة" });
+  if (!files.length) { toast("ما في ملفات للإرسال"); return; }
+  try {
+    if (navigator.canShare && navigator.canShare({ files })) {
+      await navigator.share({ files, title: "ملفات PDF", text: "الملفات المحددة" });
       clearSel();
-    }else{
-      // fallback: حمّل أول ملف
-      files.forEach(file=>{
+    } else {
+      files.forEach(file => {
         const url = URL.createObjectURL(file);
-        const a = document.createElement("a");
-        a.href=url; a.download=file.name; a.click();
-        setTimeout(()=>URL.revokeObjectURL(url),3000);
+        const a = document.createElement("a"); a.href = url; a.download = file.name; a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 3000);
       });
     }
-  }catch(e){
-    if(e?.name!=="AbortError") toast("صار خطأ بالمشاركة");
-  }
+  } catch (e) { if (e?.name !== "AbortError") toast("صار خطأ بالمشاركة"); }
 }
 
-// ===== HELPERS =====
-function showLoading(){
+function showLoading() {
   const wrap = document.getElementById("filesList");
-  wrap.style.display="block";
-  wrap.innerHTML = [1,2,3,4,5].map(()=>'<div class="skeleton"></div>').join("");
-  document.getElementById("loginCard").style.display="none";
+  wrap.style.display = "block";
+  wrap.innerHTML = [1, 2, 3, 4, 5].map(() => '<div class="skeleton"></div>').join("");
+  document.getElementById("loginCard").style.display = "none";
 }
-function hideLoading(){}
-function formatSize(b){ if(b<1024) return b+" B"; if(b<1048576) return (b/1024).toFixed(1)+" KB"; if(b<1073741824) return (b/1048576).toFixed(1)+" MB"; return (b/1073741824).toFixed(1)+" GB"; }
-function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function hideLoading() { }
+function formatSize(b) { if (b < 1024) return b + " B"; if (b < 1048576) return (b / 1024).toFixed(1) + " KB"; if (b < 1073741824) return (b / 1048576).toFixed(1) + " MB"; return (b / 1073741824).toFixed(1) + " GB"; }
+function esc(s) { return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+function toast(msg) { const t = document.getElementById("toast"); t.textContent = msg; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 2500); }
+function initDark() { if (localStorage.getItem("dm") === "1") { document.body.classList.add("dark"); document.getElementById("darkBtn").textContent = "☀️"; } }
+function toggleDark() { const d = document.body.classList.toggle("dark"); localStorage.setItem("dm", d ? "1" : "0"); document.getElementById("darkBtn").textContent = d ? "☀️" : "🌙"; }
+initDark();
 
-window.signIn=signIn; window.signOut=signOut; window.toggleFile=toggleFile;
-window.selectAll=selectAll; window.clearSel=clearSel; window.sendSelected=sendSelected;
-window.jumpTo=jumpTo; window.toggleDark=toggleDark;
+window.signIn = signIn; window.signOut = signOut; window.toggleFile = toggleFile;
+window.selectAll = selectAll; window.clearSel = clearSel; window.sendSelected = sendSelected;
+window.jumpTo = jumpTo; window.toggleDark = toggleDark;
 
 window.onload = initGapi;
 </script>
