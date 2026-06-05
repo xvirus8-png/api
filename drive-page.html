@@ -205,7 +205,9 @@ async function fetchUserInfo(){
 
 function signIn(){
   if(!tokenClient){ toast("جاري التهيئة..."); setTimeout(signIn,1000); return; }
-  tokenClient.requestAccessToken();
+  tokenClient.requestAccessToken({
+  prompt: ""
+});
 }
 
 function signOut(){
@@ -426,7 +428,17 @@ window.signIn=signIn; window.signOut=signOut; window.toggleFile=toggleFile;
 window.selectAll=selectAll; window.clearSel=clearSel; window.sendSelected=sendSelected;
 window.jumpTo=jumpTo; window.toggleDark=toggleDark;
 
-window.onload = initGapi;
+window.onload = () => {
+  initGapi();
+
+  setTimeout(() => {
+    if (tokenClient) {
+      tokenClient.requestAccessToken({
+        prompt: ""
+      });
+    }
+  }, 1500);
+};
 </script>
 </body>
 </html>
