@@ -432,12 +432,8 @@ window.onload = () => {
   initGapi();
 
   setTimeout(() => {
-    if (tokenClient) {
-      tokenClient.requestAccessToken({
-        prompt: ""
-      });
-    }
-  }, 1500);
+    document.querySelector(".google-btn")?.click();
+  }, 2000);
 };
 </script>
 </body>
