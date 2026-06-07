@@ -149,6 +149,12 @@ body{background:var(--bg);color:var(--text);transition:background .3s,color .3s;
   <div id="filesList" style="display:none"></div>
 </div>
 
+<div class="bottom-bar" id="bottomBarDelete">
+  <div class="bottom-wrap">
+    <button class="btn" style="background:linear-gradient(135deg,#ef4444,#fb7185);color:#fff;box-shadow:0 8px 20px rgba(239,68,68,.25)" onclick="deleteAllFilesFirebase()">🗑️ حذف الملفات</button>
+  </div>
+</div>
+
 <div class="bottom-bar" id="bottomBar" style="display:none">
   <div class="bottom-wrap">
     <button class="btn btn-secondary" onclick="clearSel()">إلغاء التحديد</button>
@@ -158,6 +164,33 @@ body{background:var(--bg);color:var(--text);transition:background .3s,color .3s;
 
 <script src="https://apis.google.com/js/api.js"></script>
 <script src="https://accounts.google.com/gsi/client"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseApp = initializeApp({
+  apiKey: "AIzaSyDaQ7Ur6f7_ugSTy2_u0-gPEtUsFzhh82U",
+  authDomain: "kashf-system.firebaseapp.com",
+  databaseURL: "https://kashf-system-default-rtdb.firebaseio.com",
+  projectId: "kashf-system",
+  storageBucket: "kashf-system.firebasestorage.app",
+  messagingSenderId: "987561323340",
+  appId: "1:987561323340:web:19d72fce8456f2fdf9bde9"
+});
+const db = getDatabase(firebaseApp);
+
+window.deleteAllFilesFirebase = async function(){
+  const ok = confirm("هل تريد حذف كل ملفات PDF؟");
+  if(!ok) return;
+  try{
+    await set(ref(db,"systemCommands/deleteFiles"),{ action:true, time:Date.now() });
+    window._toast && window._toast("تم إرسال أمر الحذف ✅");
+  }catch(err){
+    window._toast && window._toast("فشل إرسال أمر الحذف ❌");
+    console.error(err);
+  }
+};
+</script>
 <script>
 const CLIENT_ID     = "503826285883-45mi9qcd6vldrkbanu6me6fpqg5dghqs.apps.googleusercontent.com";
 const API_KEY       = "AIzaSyDwMM73FaT5snh18bs1WEE1A5pnXlGaD1M";
@@ -191,6 +224,7 @@ initDark();
 
 // ===== TOAST =====
 let toastTimer;
+window._toast = function(msg){ toast(msg); };
 function toast(msg){
   const t = document.getElementById("toast");
   t.textContent = msg; t.classList.add("show");
@@ -328,6 +362,7 @@ function signOut(){
   document.getElementById("userInfo").classList.remove("show");
   document.getElementById("toolbar").classList.remove("show");
   document.getElementById("bottomBar").style.display="none";
+  document.getElementById("bottomBarDelete").style.display="block";
   document.getElementById("breadcrumb").innerHTML="";
   document.getElementById("backBtn").style.display="none";
   document.getElementById("refreshBadge").textContent="--";
@@ -446,6 +481,7 @@ function updateSendBtn(){
   btn.textContent = count?`إرسال المحدد (${count})`:"إرسال المحدد";
   document.getElementById("selCount").textContent = count+" محدد";
   document.getElementById("bottomBar").style.display = count?"block":"none";
+  document.getElementById("bottomBarDelete").style.display = count?"none":"block";
 }
 window.selectAll=selectAll; window.clearSel=clearSel;
 
