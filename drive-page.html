@@ -66,6 +66,7 @@ body{background:var(--bg);color:var(--text);transition:background .3s,color .3s;
 .file-name{font-size:14px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
 .file-meta{font-size:12px;color:var(--sub)}
 .file-arrow{color:var(--sub);font-size:16px}
+.open-btn{width:36px;height:36px;border:none;border-radius:10px;background:var(--primary-light);color:var(--primary);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;border:1px solid var(--primary-border);flex:0 0 36px}
 
 #breadcrumb{display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-wrap:wrap;min-height:28px}
 .crumb{font-size:13px;font-weight:700;color:var(--primary);cursor:pointer;padding:4px 8px;border-radius:8px;background:var(--primary-light);border:1px solid var(--primary-border)}
@@ -450,7 +451,10 @@ function renderFiles(){
         <div class="file-name">${esc(f.name)}</div>
         <div class="file-meta">${size}${size&&date?" • ":""}${date}</div>
       </div>
-      ${isFolder?`<i class="bi bi-chevron-left file-arrow"></i>`:""}
+      ${isFolder
+        ? `<i class="bi bi-chevron-left file-arrow"></i>`
+        : `<button class="open-btn" data-idx="${i}" title="فتح"><i class="bi bi-eye"></i></button>`
+      }
     </div>`;
   }).join("");
 
@@ -462,6 +466,8 @@ function renderFiles(){
     } else {
       card.onclick=()=>toggleFile(i);
       card.querySelector(".file-check").onclick=e=>{ e.stopPropagation(); toggleFile(i); };
+      const openBtn=card.querySelector(".open-btn");
+      if(openBtn) openBtn.onclick=e=>{ e.stopPropagation(); openFilePreview(f); };
     }
   });
 }
@@ -477,6 +483,26 @@ function openFolder(f){ folderStack.push({id:f.id,name:f.name}); loadFolder(f.id
 function goBack(){ if(folderStack.length<=1) return; folderStack.pop(); loadFolder(folderStack[folderStack.length-1].id); }
 function jumpTo(idx){ folderStack=folderStack.slice(0,idx+1); loadFolder(folderStack[folderStack.length-1].id); }
 window.goBack=goBack; window.jumpTo=jumpTo; window.openFolder=openFolder;
+
+async function openFilePreview(f){
+  toast("جاري فتح الملف...");
+  try{
+    // لو محمل مسبقاً استخدمه
+    let fileBlob;
+    if(preloadCache[f.id]){
+      fileBlob=preloadCache[f.id];
+    } else {
+      const res=await fetch(`https://www.googleapis.com/drive/v3/files/${f.id}?alt=media`,{headers:{Authorization:"Bearer "+accessToken}});
+      if(!res.ok) throw new Error("فشل التحميل");
+      fileBlob=await res.blob();
+    }
+    const url=URL.createObjectURL(fileBlob);
+    window.open(url,"_blank");
+    setTimeout(()=>URL.revokeObjectURL(url),60000);
+  }catch(e){
+    toast("فشل فتح الملف ❌");
+  }
+}
 
 // SELECTION
 function toggleFile(idx){
