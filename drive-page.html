@@ -97,8 +97,6 @@ body{background:var(--bg);color:var(--text);transition:background .3s,color .3s;
 .btn-secondary{background:var(--primary-light);color:var(--primary);border:1.5px solid var(--primary-border)}
 .btn-danger{background:linear-gradient(135deg,#ef4444,#fb7185);color:#fff;box-shadow:0 8px 20px rgba(239,68,68,.25)}
 
-#userInfo{display:none;align-items:center;gap:8px;background:var(--primary-light);border:1px solid var(--primary-border);border-radius:12px;padding:8px 12px;margin-bottom:10px}
-#userInfo.show{display:flex}
 #userAvatar{width:28px;height:28px;border-radius:50%;object-fit:cover}
 #userName{font-size:13px;font-weight:700;flex:1;color:var(--text)}
 #logoutBtn{border:none;background:none;color:var(--sub);font-size:18px;cursor:pointer;padding:2px}
@@ -165,12 +163,6 @@ body{background:var(--bg);color:var(--text);transition:background .3s,color .3s;
       <span class="refresh-badge" id="refreshBadge">--</span>
       <button class="icon-btn" id="darkBtn" onclick="toggleDark()">🌙</button>
     </div>
-  </div>
-
-  <div id="userInfo">
-    <img id="userAvatar" src="" alt="">
-    <span id="userName"></span>
-    <button id="logoutBtn" onclick="signOut()"><i class="bi bi-box-arrow-right"></i></button>
   </div>
 
   <div id="breadcrumb"></div>
@@ -318,15 +310,7 @@ function initGapi(){
 }
 function refreshToken(){ if(tokenClient) tokenClient.requestAccessToken(); }
 
-async function fetchUserInfo(){
-  try{
-    const r=await fetch("https://www.googleapis.com/oauth2/v3/userinfo",{headers:{Authorization:"Bearer "+accessToken}});
-    const u=await r.json();
-    document.getElementById("userAvatar").src=u.picture||"";
-    document.getElementById("userName").textContent=u.name||u.email||"";
-    document.getElementById("userInfo").classList.add("show");
-  }catch{}
-}
+async function fetchUserInfo(){}
 
 function signIn(){
   if(!tokenClient){ toast("جاري التهيئة..."); setTimeout(signIn,1000); return; }
@@ -340,7 +324,6 @@ function signOut(){
   selectedIds.clear(); currentFiles=[]; filteredFiles=[]; folderStack=[]; preloadCache={}; preloadQueue=[];
   document.getElementById("loginCard").style.display="flex";
   document.getElementById("filesList").style.display="none";
-  document.getElementById("userInfo").classList.remove("show");
   document.getElementById("toolbar").classList.remove("show");
   document.getElementById("statsBar").classList.remove("show");
   document.getElementById("searchBar").classList.remove("show");
@@ -362,7 +345,7 @@ async function findTargetFolder(){
     });
     const files=res.result.files||[];
     folderStack=files.length
-      ?[{id:"root",name:"My Drive"},{id:files[0].id,name:files[0].name}]
+      ?[{id:files[0].id,name:files[0].name}]
       :[{id:"root",name:"My Drive"}];
     if(!files.length) toast("ما لكيت المجلد، يعرض My Drive");
     loadFolder(folderStack[folderStack.length-1].id);
