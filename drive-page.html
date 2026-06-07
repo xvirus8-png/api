@@ -33,8 +33,7 @@ body{background:var(--bg);color:var(--text);transition:background .3s,color .3s;
 .icon-btn{width:42px;height:42px;border:none;border-radius:12px;background:var(--card);box-shadow:var(--shadow);font-size:18px;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;transition:background .3s}
 
 /* SEARCH BAR */
-#searchBar{display:none;margin-bottom:10px;gap:8px}
-#searchBar.show{display:flex}
+#searchBar{display:flex;margin-bottom:10px;gap:8px}
 #searchBarInput{flex:1;padding:11px 14px;border-radius:12px;border:1.5px solid var(--primary-border);font-size:15px;background:var(--input-bg);color:var(--text);outline:none;transition:background .3s,color .3s,border-color .3s}
 .clear-btn{width:38px;height:38px;border:none;border-radius:10px;background:var(--primary-light);color:var(--primary);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;border:1px solid var(--primary-border)}
 
@@ -43,11 +42,7 @@ body{background:var(--bg);color:var(--text);transition:background .3s,color .3s;
 #statsBar.show{display:flex}
 .stat-badge{font-size:12px;font-weight:700;padding:5px 10px;border-radius:8px;background:var(--primary-light);color:var(--primary);border:1px solid var(--primary-border)}
 
-/* FILTER TABS */
-#filterTabs{display:none;gap:6px;margin-bottom:10px;overflow-x:auto;padding-bottom:2px}
-#filterTabs.show{display:flex}
-.filter-tab{border:none;border-radius:10px;padding:7px 14px;font-size:13px;font-weight:800;cursor:pointer;background:var(--primary-light);color:var(--sub);border:1px solid var(--primary-border);white-space:nowrap;transition:all .2s}
-.filter-tab.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+
 
 /* LOGIN */
 #loginCard{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px;text-align:center}
@@ -68,10 +63,11 @@ body{background:var(--bg);color:var(--text);transition:background .3s,color .3s;
 #filesList{overflow-y:auto;height:calc(100vh - 260px)}
 .file-card{background:var(--card);border-radius:16px;padding:12px 14px;margin-bottom:10px;box-shadow:var(--shadow);display:flex;align-items:center;gap:12px;border:1.5px solid var(--border);cursor:pointer;transition:background .3s,border-color .3s}
 .file-card.selected{border-color:var(--primary);background:var(--primary-light)}
-.file-card.preloaded .file-icon{box-shadow:0 0 0 2px #16a34a}
-.file-check{width:20px;height:20px;accent-color:var(--primary);flex:0 0 20px}
-.file-icon{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#ef4444,#fb7185);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;flex:0 0 42px;transition:box-shadow .3s}
+.file-icon-wrap{position:relative;flex:0 0 42px}
+.file-icon{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#ef4444,#fb7185);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px}
 .file-icon.folder{background:linear-gradient(135deg,#f59e0b,#fbbf24)}
+.preload-badge{position:absolute;bottom:-3px;right:-3px;width:16px;height:16px;border-radius:50%;background:#16a34a;border:2px solid var(--card);display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;display:none}
+.file-card.preloaded .preload-badge{display:flex}
 .file-info{flex:1;min-width:0}
 .file-name{font-size:14px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
 .file-meta{font-size:12px;color:var(--sub)}
@@ -183,7 +179,6 @@ body{background:var(--bg);color:var(--text);transition:background .3s,color .3s;
     </div>
     <div style="display:flex;gap:8px;align-items:center">
       <span class="refresh-badge" id="refreshBadge">--</span>
-      <button class="icon-btn" id="searchToggleBtn" onclick="toggleSearch()" style="display:none" title="بحث"><i class="bi bi-search"></i></button>
       <button class="icon-btn" id="darkBtn" onclick="toggleDark()">🌙</button>
     </div>
   </div>
@@ -295,7 +290,6 @@ let filteredFiles = [];
 let selectedIds = new Set();
 let refreshTimer = null;
 let refreshCountdown = REFRESH_SEC;
-let activeFilter = "all";
 let searchQuery = "";
 let preloadCache = {}; // id -> File (preloaded)
 let preloadQueue = [];
@@ -390,9 +384,7 @@ function signOut(){
   document.getElementById("backBtn").style.display="none";
   document.getElementById("refreshBadge").textContent="--";
   document.getElementById("searchBar").classList.remove("show");
-  document.getElementById("filterTabs").classList.remove("show");
   document.getElementById("statsBar").classList.remove("show");
-  document.getElementById("searchToggleBtn").style.display="none";
   toast("تم تسجيل الخروج");
 }
 window.signOut=signOut;
@@ -431,9 +423,7 @@ async function loadFolder(folderId){
     document.getElementById("loginCard").style.display="none";
     document.getElementById("filesList").style.display="block";
     document.getElementById("toolbar").classList.add("show");
-    document.getElementById("filterTabs").classList.add("show");
     document.getElementById("statsBar").classList.add("show");
-    document.getElementById("searchToggleBtn").style.display="flex";
     document.getElementById("backBtn").style.display=folderStack.length>1?"flex":"none";
     startPreload();
   }catch(e){
@@ -448,9 +438,6 @@ function applyFilterAndSearch(){
   let files=[...currentFiles];
 
   // فلتر النوع
-  if(activeFilter==="pdf") files=files.filter(f=>f.name?.toLowerCase().endsWith(".pdf"));
-  else if(activeFilter==="folder") files=files.filter(f=>f.mimeType==="application/vnd.google-apps.folder");
-  else if(activeFilter==="other") files=files.filter(f=>f.mimeType!=="application/vnd.google-apps.folder"&&!f.name?.toLowerCase().endsWith(".pdf"));
 
   // بحث
   if(searchQuery.trim()){
@@ -463,22 +450,17 @@ function applyFilterAndSearch(){
   updateStatsBar();
 }
 
-function setFilter(type, btn){
-  activeFilter=type;
   document.querySelectorAll(".filter-tab").forEach(b=>b.classList.remove("active"));
   btn.classList.add("active");
   applyFilterAndSearch();
 }
-window.setFilter=setFilter;
 
-function toggleSearch(){
   const bar=document.getElementById("searchBar");
   bar.classList.toggle("show");
   if(bar.classList.contains("show")) document.getElementById("searchBarInput").focus();
   else{ document.getElementById("searchBarInput").value=""; searchQuery=""; applyFilterAndSearch(); }
 }
 function clearSearch(){ document.getElementById("searchBarInput").value=""; searchQuery=""; applyFilterAndSearch(); }
-window.toggleSearch=toggleSearch; window.clearSearch=clearSearch;
 document.addEventListener("DOMContentLoaded",()=>{
   document.getElementById("searchBarInput").addEventListener("input",e=>{ searchQuery=e.target.value; applyFilterAndSearch(); });
 });
@@ -531,14 +513,16 @@ function renderFiles(){
     const isPreloaded=!!preloadCache[f.id];
     const size=f.size?formatSize(Number(f.size)):"";
     const date=f.modifiedTime?new Date(f.modifiedTime).toLocaleDateString("ar"):"";
-    const preloadDot=isPreloaded&&!isFolder?` <span style="color:#16a34a;font-size:10px">⚡</span>`:"";
     return `<div class="file-card${checked?" selected":""}${isPreloaded?" preloaded":""}" data-idx="${i}">
       <input type="checkbox" class="file-check" ${checked?"checked":""}>
-      <div class="file-icon${isFolder?" folder":""}">
-        <i class="bi ${isFolder?"bi-folder-fill":isPdf?"bi-file-earmark-pdf-fill":"bi-file-earmark-fill"}"></i>
+      <div class="file-icon-wrap">
+        <div class="file-icon${isFolder?" folder":""}">
+          <i class="bi ${isFolder?"bi-folder-fill":isPdf?"bi-file-earmark-pdf-fill":"bi-file-earmark-fill"}"></i>
+        </div>
+        <div class="preload-badge">⚡</div>
       </div>
       <div class="file-info">
-        <div class="file-name">${esc(f.name)}${preloadDot}</div>
+        <div class="file-name">${esc(f.name)}</div>
         <div class="file-meta">${size}${size&&date?" • ":""}${date}</div>
       </div>
       ${isFolder?`<i class="bi bi-chevron-left file-arrow"></i>`:""}
