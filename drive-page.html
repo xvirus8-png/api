@@ -14,64 +14,115 @@
   --bg:#f5f7fa;--card:#fff;--shadow:0 8px 25px rgba(0,0,0,.07);
   --text:#1f2a44;--sub:#6e7b96;--border:#edf2ff;
   --primary:#0d6efd;--primary-light:#eef4ff;--primary-border:#dbe4ff;
-  --bottom:rgba(255,255,255,.92);
+  --bottom:rgba(255,255,255,.92);--input-bg:#fff;
 }
 body.dark{
   --bg:#0f1117;--card:#1a1d27;--shadow:0 8px 25px rgba(0,0,0,.3);
   --text:#e2e8f0;--sub:#8896b0;--border:#2a3456;
   --primary-light:#161926;--primary-border:#2a3456;
-  --bottom:rgba(15,17,23,.94);
+  --bottom:rgba(15,17,23,.94);--input-bg:#1a1d27;
 }
 html,body{height:100%;overflow:hidden;font-family:system-ui}
 body{background:var(--bg);color:var(--text);transition:background .3s,color .3s;padding-bottom:90px}
 .container{max-width:600px;margin:auto;padding:15px}
-.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+
+/* TOP BAR */
+.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .top-bar h1{font-size:20px;font-weight:800}
 .top-bar-left{display:flex;align-items:center;gap:8px}
 .icon-btn{width:42px;height:42px;border:none;border-radius:12px;background:var(--card);box-shadow:var(--shadow);font-size:18px;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;transition:background .3s}
+
+/* SEARCH BAR */
+#searchBar{display:none;margin-bottom:10px;gap:8px}
+#searchBar.show{display:flex}
+#searchBarInput{flex:1;padding:11px 14px;border-radius:12px;border:1.5px solid var(--primary-border);font-size:15px;background:var(--input-bg);color:var(--text);outline:none;transition:background .3s,color .3s,border-color .3s}
+.clear-btn{width:38px;height:38px;border:none;border-radius:10px;background:var(--primary-light);color:var(--primary);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;border:1px solid var(--primary-border)}
+
+/* STATS BAR */
+#statsBar{display:none;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+#statsBar.show{display:flex}
+.stat-badge{font-size:12px;font-weight:700;padding:5px 10px;border-radius:8px;background:var(--primary-light);color:var(--primary);border:1px solid var(--primary-border)}
+
+/* FILTER TABS */
+#filterTabs{display:none;gap:6px;margin-bottom:10px;overflow-x:auto;padding-bottom:2px}
+#filterTabs.show{display:flex}
+.filter-tab{border:none;border-radius:10px;padding:7px 14px;font-size:13px;font-weight:800;cursor:pointer;background:var(--primary-light);color:var(--sub);border:1px solid var(--primary-border);white-space:nowrap;transition:all .2s}
+.filter-tab.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+/* LOGIN */
 #loginCard{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px;text-align:center}
 .login-icon{width:80px;height:80px;border-radius:24px;background:linear-gradient(135deg,#4285f4,#34a853);display:flex;align-items:center;justify-content:center;font-size:38px;margin-bottom:8px}
 .login-title{font-size:20px;font-weight:800}
 .login-sub{font-size:14px;color:var(--sub);max-width:260px;line-height:1.6}
 .google-btn{display:flex;align-items:center;gap:10px;padding:14px 24px;border-radius:16px;border:none;background:#fff;box-shadow:0 4px 16px rgba(0,0,0,.12);font-size:16px;font-weight:700;cursor:pointer;color:#1f2a44}
 .google-btn img{width:22px;height:22px}
-#toolbar{display:none;margin-bottom:12px;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* TOOLBAR */
+#toolbar{display:none;margin-bottom:10px;gap:8px;flex-wrap:wrap;align-items:center}
 #toolbar.show{display:flex}
 .mini-btn{border:none;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:800;cursor:pointer;background:var(--primary-light);color:var(--primary);border:1px solid var(--primary-border);transition:background .3s}
 .sel-count{font-size:13px;font-weight:800;color:var(--sub);padding:9px 4px}
 .refresh-badge{font-size:11px;font-weight:700;color:var(--sub);padding:4px 8px;border-radius:8px;background:var(--primary-light);border:1px solid var(--primary-border)}
-#filesList{overflow-y:auto;height:calc(100vh - 210px)}
+
+/* FILES */
+#filesList{overflow-y:auto;height:calc(100vh - 260px)}
 .file-card{background:var(--card);border-radius:16px;padding:12px 14px;margin-bottom:10px;box-shadow:var(--shadow);display:flex;align-items:center;gap:12px;border:1.5px solid var(--border);cursor:pointer;transition:background .3s,border-color .3s}
 .file-card.selected{border-color:var(--primary);background:var(--primary-light)}
+.file-card.preloaded .file-icon{box-shadow:0 0 0 2px #16a34a}
 .file-check{width:20px;height:20px;accent-color:var(--primary);flex:0 0 20px}
-.file-icon{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#ef4444,#fb7185);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;flex:0 0 42px}
+.file-icon{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#ef4444,#fb7185);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;flex:0 0 42px;transition:box-shadow .3s}
 .file-icon.folder{background:linear-gradient(135deg,#f59e0b,#fbbf24)}
 .file-info{flex:1;min-width:0}
 .file-name{font-size:14px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
 .file-meta{font-size:12px;color:var(--sub)}
 .file-arrow{color:var(--sub);font-size:16px}
-#breadcrumb{display:flex;align-items:center;gap:6px;margin-bottom:12px;flex-wrap:wrap;min-height:28px}
+
+/* BREADCRUMB */
+#breadcrumb{display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-wrap:wrap;min-height:28px}
 .crumb{font-size:13px;font-weight:700;color:var(--primary);cursor:pointer;padding:4px 8px;border-radius:8px;background:var(--primary-light);border:1px solid var(--primary-border)}
 .crumb-sep{color:var(--sub);font-size:12px}
+
+/* CONFIRM OVERLAY */
+#confirmOverlay{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);z-index:6000;display:none;align-items:center;justify-content:center}
+#confirmOverlay.show{display:flex}
+.confirm-card{background:var(--card);border-radius:20px;padding:24px;width:min(90%,360px);box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center}
+.confirm-title{font-size:18px;font-weight:800;margin-bottom:8px;color:var(--text)}
+.confirm-sub{font-size:13px;color:var(--sub);margin-bottom:20px;line-height:1.6}
+.confirm-files{background:var(--bg);border-radius:12px;padding:10px;margin-bottom:16px;max-height:150px;overflow-y:auto;text-align:right}
+.confirm-file-item{font-size:13px;font-weight:700;color:var(--text);padding:4px 0;border-bottom:1px solid var(--border)}
+.confirm-file-item:last-child{border-bottom:none}
+.confirm-btns{display:flex;gap:10px}
+.confirm-btn{flex:1;padding:13px;border:none;border-radius:12px;font-weight:800;font-size:15px;cursor:pointer}
+.confirm-btn.ok{background:var(--primary);color:#fff}
+.confirm-btn.cancel{background:var(--primary-light);color:var(--primary);border:1px solid var(--primary-border)}
+
+/* EMPTY / SKELETON */
 .empty-box{background:var(--card);border-radius:16px;padding:32px;text-align:center;color:var(--sub);font-weight:700;box-shadow:var(--shadow)}
 .skeleton{background:var(--card);border-radius:16px;height:66px;margin-bottom:10px;overflow:hidden;position:relative}
 .skeleton::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 25%,rgba(150,150,150,.08) 50%,transparent 75%);background-size:200% 100%;animation:shimmer 1.4s infinite}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* BOTTOM BARS */
 .bottom-bar{position:fixed;bottom:0;left:0;right:0;background:var(--bottom);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:12px;border-top:1px solid var(--border);z-index:100;transition:background .3s}
 .bottom-wrap{max-width:600px;margin:auto;display:flex;gap:10px}
 .btn{flex:1;padding:14px;border:none;border-radius:14px;font-weight:800;font-size:15px;cursor:pointer}
 .btn-primary{background:var(--primary);color:#fff;box-shadow:0 8px 20px rgba(13,110,253,.25)}
 .btn-primary:disabled{opacity:.5;cursor:not-allowed}
 .btn-secondary{background:var(--primary-light);color:var(--primary);border:1.5px solid var(--primary-border)}
-#userInfo{display:none;align-items:center;gap:8px;background:var(--primary-light);border:1px solid var(--primary-border);border-radius:12px;padding:8px 12px;margin-bottom:12px}
+.btn-danger{background:linear-gradient(135deg,#ef4444,#fb7185);color:#fff;box-shadow:0 8px 20px rgba(239,68,68,.25)}
+
+/* USER INFO */
+#userInfo{display:none;align-items:center;gap:8px;background:var(--primary-light);border:1px solid var(--primary-border);border-radius:12px;padding:8px 12px;margin-bottom:10px}
 #userInfo.show{display:flex}
 #userAvatar{width:28px;height:28px;border-radius:50%;object-fit:cover}
 #userName{font-size:13px;font-weight:700;flex:1;color:var(--text)}
 #logoutBtn{border:none;background:none;color:var(--sub);font-size:18px;cursor:pointer;padding:2px}
+
+/* TOAST */
 #toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:#1f2a44;color:#fff;padding:10px 20px;border-radius:12px;font-size:14px;font-weight:700;z-index:9999;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* progress overlay */
+/* PROGRESS */
 #progressOverlay{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);z-index:5000;display:none;align-items:center;justify-content:center}
 #progressOverlay.show{display:flex}
 .progress-card{background:var(--card);border-radius:20px;padding:24px;width:min(90%,380px);box-shadow:0 20px 60px rgba(0,0,0,.3)}
@@ -97,6 +148,19 @@ body{background:var(--bg);color:var(--text);transition:background .3s,color .3s;
 
 <div id="toast"></div>
 
+<!-- Confirm Overlay -->
+<div id="confirmOverlay">
+  <div class="confirm-card">
+    <div class="confirm-title">📤 تأكيد الإرسال</div>
+    <div class="confirm-sub" id="confirmSub"></div>
+    <div class="confirm-files" id="confirmFilesList"></div>
+    <div class="confirm-btns">
+      <button class="confirm-btn cancel" onclick="closeConfirm()">إلغاء</button>
+      <button class="confirm-btn ok" onclick="doSend()">إرسال</button>
+    </div>
+  </div>
+</div>
+
 <!-- Progress Overlay -->
 <div id="progressOverlay">
   <div class="progress-card">
@@ -111,6 +175,7 @@ body{background:var(--bg);color:var(--text);transition:background .3s,color .3s;
 </div>
 
 <div class="container">
+  <!-- TOP BAR -->
   <div class="top-bar">
     <div class="top-bar-left">
       <button class="icon-btn" id="backBtn" onclick="goBack()" style="display:none"><i class="bi bi-arrow-right"></i></button>
@@ -118,24 +183,50 @@ body{background:var(--bg);color:var(--text);transition:background .3s,color .3s;
     </div>
     <div style="display:flex;gap:8px;align-items:center">
       <span class="refresh-badge" id="refreshBadge">--</span>
+      <button class="icon-btn" id="searchToggleBtn" onclick="toggleSearch()" style="display:none" title="بحث"><i class="bi bi-search"></i></button>
       <button class="icon-btn" id="darkBtn" onclick="toggleDark()">🌙</button>
     </div>
   </div>
 
+  <!-- USER INFO -->
   <div id="userInfo">
     <img id="userAvatar" src="" alt="">
     <span id="userName"></span>
     <button id="logoutBtn" onclick="signOut()" title="تسجيل الخروج"><i class="bi bi-box-arrow-right"></i></button>
   </div>
 
+  <!-- BREADCRUMB -->
   <div id="breadcrumb"></div>
 
+  <!-- SEARCH BAR -->
+  <div id="searchBar">
+    <input type="text" id="searchBarInput" placeholder="ابحث عن ملف...">
+    <button class="clear-btn" onclick="clearSearch()"><i class="bi bi-x-lg"></i></button>
+  </div>
+
+  <!-- FILTER TABS -->
+  <div id="filterTabs">
+    <button class="filter-tab active" onclick="setFilter('all',this)">الكل</button>
+    <button class="filter-tab" onclick="setFilter('pdf',this)">PDF</button>
+    <button class="filter-tab" onclick="setFilter('folder',this)">مجلدات</button>
+    <button class="filter-tab" onclick="setFilter('other',this)">أخرى</button>
+  </div>
+
+  <!-- STATS BAR -->
+  <div id="statsBar">
+    <span class="stat-badge" id="statTotal">0 ملف</span>
+    <span class="stat-badge" id="statSize" style="display:none"></span>
+    <span class="stat-badge" id="statPreloaded" style="display:none;background:#ecfdf3;color:#16a34a;border-color:#bbf7d0">⚡ جاهز</span>
+  </div>
+
+  <!-- TOOLBAR -->
   <div id="toolbar">
     <button class="mini-btn" onclick="selectAll()">تحديد الكل</button>
     <button class="mini-btn" onclick="clearSel()">إلغاء التحديد</button>
     <span class="sel-count" id="selCount">0 محدد</span>
   </div>
 
+  <!-- LOGIN CARD -->
   <div id="loginCard">
     <div class="login-icon">📂</div>
     <div class="login-title">ملفات Google Drive</div>
@@ -149,25 +240,25 @@ body{background:var(--bg);color:var(--text);transition:background .3s,color .3s;
   <div id="filesList" style="display:none"></div>
 </div>
 
+<!-- BOTTOM BAR: DELETE -->
 <div class="bottom-bar" id="bottomBarDelete">
   <div class="bottom-wrap">
-    <button class="btn" style="background:linear-gradient(135deg,#ef4444,#fb7185);color:#fff;box-shadow:0 8px 20px rgba(239,68,68,.25)" onclick="deleteAllFilesFirebase()">🗑️ حذف الملفات</button>
+    <button class="btn btn-danger" onclick="deleteAllFilesFirebase()">🗑️ حذف الملفات</button>
   </div>
 </div>
 
+<!-- BOTTOM BAR: SEND -->
 <div class="bottom-bar" id="bottomBar" style="display:none">
   <div class="bottom-wrap">
-    <button class="btn btn-secondary" onclick="clearSel()">إلغاء التحديد</button>
+    <button class="btn btn-secondary" onclick="clearSel()">إلغاء</button>
     <button class="btn btn-primary" id="sendBtn" onclick="sendSelected()" disabled>إرسال المحدد (0)</button>
   </div>
 </div>
 
-<script src="https://apis.google.com/js/api.js"></script>
-<script src="https://accounts.google.com/gsi/client"></script>
+<!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
 const firebaseApp = initializeApp({
   apiKey: "AIzaSyDaQ7Ur6f7_ugSTy2_u0-gPEtUsFzhh82U",
   authDomain: "kashf-system.firebaseapp.com",
@@ -178,19 +269,20 @@ const firebaseApp = initializeApp({
   appId: "1:987561323340:web:19d72fce8456f2fdf9bde9"
 });
 const db = getDatabase(firebaseApp);
-
 window.deleteAllFilesFirebase = async function(){
   const ok = confirm("هل تريد حذف كل ملفات PDF؟");
   if(!ok) return;
   try{
     await set(ref(db,"systemCommands/deleteFiles"),{ action:true, time:Date.now() });
-    window._toast && window._toast("تم إرسال أمر الحذف ✅");
+    window._toast("تم إرسال أمر الحذف ✅");
   }catch(err){
-    window._toast && window._toast("فشل إرسال أمر الحذف ❌");
-    console.error(err);
+    window._toast("فشل إرسال أمر الحذف ❌");
   }
 };
 </script>
+
+<script src="https://apis.google.com/js/api.js"></script>
+<script src="https://accounts.google.com/gsi/client"></script>
 <script>
 const CLIENT_ID     = "503826285883-45mi9qcd6vldrkbanu6me6fpqg5dghqs.apps.googleusercontent.com";
 const API_KEY       = "AIzaSyDwMM73FaT5snh18bs1WEE1A5pnXlGaD1M";
@@ -198,165 +290,102 @@ const SCOPES        = "https://www.googleapis.com/auth/drive.readonly";
 const TARGET_FOLDER = "PDF- Cloud Drive";
 const TOKEN_KEY     = "gd_token";
 const TOKEN_EXP_KEY = "gd_token_exp";
-const REFRESH_SEC   = 1; // تحديث كل ثانية
-const MAX_PARALLEL  = 5; // عدد التحميلات المتوازية
-const MAX_RETRY     = 3; // عدد المحاولات لكل ملف
+const REFRESH_SEC   = 1;
+const MAX_PARALLEL  = 5;
+const MAX_RETRY     = 3;
 
 let tokenClient, accessToken = null;
 let folderStack = [];
 let currentFiles = [];
+let filteredFiles = [];
 let selectedIds = new Set();
 let refreshTimer = null;
-let lastRefresh = null;
 let refreshCountdown = REFRESH_SEC;
+let activeFilter = "all";
+let searchQuery = "";
+let preloadCache = {}; // id -> File (preloaded)
+let preloadQueue = [];
 
 // ===== DARK MODE =====
-function initDark(){
-  if(localStorage.getItem("dm")==="1"){ document.body.classList.add("dark"); document.getElementById("darkBtn").textContent="☀️"; }
-}
-function toggleDark(){
-  const d = document.body.classList.toggle("dark");
-  localStorage.setItem("dm", d?"1":"0");
-  document.getElementById("darkBtn").textContent = d?"☀️":"🌙";
-}
-window.toggleDark = toggleDark;
+function initDark(){ if(localStorage.getItem("dm")==="1"){ document.body.classList.add("dark"); document.getElementById("darkBtn").textContent="☀️"; } }
+function toggleDark(){ const d=document.body.classList.toggle("dark"); localStorage.setItem("dm",d?"1":"0"); document.getElementById("darkBtn").textContent=d?"☀️":"🌙"; }
+window.toggleDark=toggleDark;
 initDark();
 
 // ===== TOAST =====
 let toastTimer;
 window._toast = function(msg){ toast(msg); };
-function toast(msg){
-  const t = document.getElementById("toast");
-  t.textContent = msg; t.classList.add("show");
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(()=>t.classList.remove("show"), 2800);
-}
+function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("show"),2800); }
 
-// ===== TOKEN STORAGE =====
-function saveToken(token){
-  const exp = Date.now() + 55 * 60 * 1000; // 55 دقيقة
-  localStorage.setItem(TOKEN_KEY, token);
-  localStorage.setItem(TOKEN_EXP_KEY, String(exp));
-}
-function loadToken(){
-  const token = localStorage.getItem(TOKEN_KEY);
-  const exp   = Number(localStorage.getItem(TOKEN_EXP_KEY)||0);
-  if(!token || Date.now() > exp) return null;
-  return token;
-}
-function clearToken(){
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(TOKEN_EXP_KEY);
-}
+// ===== TOKEN =====
+function saveToken(t){ localStorage.setItem(TOKEN_KEY,t); localStorage.setItem(TOKEN_EXP_KEY,String(Date.now()+55*60*1000)); }
+function loadToken(){ const t=localStorage.getItem(TOKEN_KEY); const e=Number(localStorage.getItem(TOKEN_EXP_KEY)||0); if(!t||Date.now()>e) return null; return t; }
+function clearToken(){ localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(TOKEN_EXP_KEY); }
 
 // ===== REFRESH BADGE =====
 function startRefreshTimer(){
   clearInterval(refreshTimer);
-  refreshCountdown = REFRESH_SEC;
-  refreshTimer = setInterval(()=>{
+  refreshCountdown=REFRESH_SEC;
+  refreshTimer=setInterval(()=>{
     refreshCountdown--;
-    updateRefreshBadge();
-    if(refreshCountdown <= 0){
-      refreshCountdown = REFRESH_SEC;
-      silentRefresh();
-    }
-  }, 1000);
-}
-
-function updateRefreshBadge(){
-  const badge = document.getElementById("refreshBadge");
-  if(!badge) return;
-  if(refreshCountdown <= 0){
-    badge.textContent = "🔄";
-  } else {
-    badge.textContent = refreshCountdown + "ث";
-  }
+    document.getElementById("refreshBadge").textContent = refreshCountdown<=0?"🔄":refreshCountdown+"ث";
+    if(refreshCountdown<=0){ refreshCountdown=REFRESH_SEC; silentRefresh(); }
+  },1000);
 }
 
 async function silentRefresh(){
-  if(!accessToken || !folderStack.length) return;
-  const folderId = folderStack[folderStack.length-1].id;
+  if(!accessToken||!folderStack.length) return;
+  const folderId=folderStack[folderStack.length-1].id;
   try{
-    gapi.client.setToken({access_token: accessToken});
-    const res = await gapi.client.drive.files.list({
-      q: `'${folderId}' in parents and trashed=false`,
-      fields: "files(id,name,mimeType,size,modifiedTime)",
-      orderBy: "name",
-      pageSize: 100
+    gapi.client.setToken({access_token:accessToken});
+    const res=await gapi.client.drive.files.list({
+      q:`'${folderId}' in parents and trashed=false`,
+      fields:"files(id,name,mimeType,size,modifiedTime)",
+      orderBy:"modifiedTime desc",
+      pageSize:100
     });
-    const newFiles = res.result.files || [];
-    // فقط إذا تغير الحجم نعيد الرسم
-    if(JSON.stringify(newFiles.map(f=>f.id)) !== JSON.stringify(currentFiles.map(f=>f.id))){
-      currentFiles = newFiles;
-      // نحتفظ بالتحديد
-      renderFiles();
+    const newFiles=res.result.files||[];
+    if(JSON.stringify(newFiles.map(f=>f.id))!==JSON.stringify(currentFiles.map(f=>f.id))){
+      currentFiles=newFiles;
+      applyFilterAndSearch();
+      startPreload();
     }
-    lastRefresh = new Date();
-  }catch(e){
-    if(e.status===401){ refreshToken(); }
-  }
+  }catch(e){ if(e.status===401) refreshToken(); }
 }
 
-// ===== INIT GAPI =====
+// ===== INIT =====
 function initGapi(){
-  gapi.load("client", async ()=>{
-    await gapi.client.init({
-      apiKey: API_KEY,
-      discoveryDocs:["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"]
-    });
-
-    tokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: CLIENT_ID,
-      scope: SCOPES,
-      prompt: "",
-      callback: async (resp)=>{
+  gapi.load("client",async()=>{
+    await gapi.client.init({apiKey:API_KEY,discoveryDocs:["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"]});
+    tokenClient=google.accounts.oauth2.initTokenClient({
+      client_id:CLIENT_ID, scope:SCOPES, prompt:"",
+      callback:async(resp)=>{
         if(resp.error){ toast("فشل تسجيل الدخول"); return; }
-        accessToken = resp.access_token;
-        saveToken(accessToken);
-        gapi.client.setToken({access_token: accessToken});
-        await fetchUserInfo();
-        await findTargetFolder();
-        startRefreshTimer();
+        accessToken=resp.access_token; saveToken(accessToken);
+        gapi.client.setToken({access_token:accessToken});
+        await fetchUserInfo(); await findTargetFolder(); startRefreshTimer();
       }
     });
-
-    // جرب التوكن المحفوظ
-    const saved = loadToken();
-    if(saved){
-      accessToken = saved;
-      gapi.client.setToken({access_token: saved});
-      fetchUserInfo().then(()=>{ findTargetFolder(); startRefreshTimer(); });
-    }
+    const saved=loadToken();
+    if(saved){ accessToken=saved; gapi.client.setToken({access_token:saved}); fetchUserInfo().then(()=>{ findTargetFolder(); startRefreshTimer(); }); }
   });
 }
-
-function refreshToken(){
-  if(!tokenClient) return;
-  tokenClient.requestAccessToken();
-}
+function refreshToken(){ if(tokenClient) tokenClient.requestAccessToken(); }
 
 async function fetchUserInfo(){
   try{
-    const r = await fetch("https://www.googleapis.com/oauth2/v3/userinfo",
-      {headers:{Authorization:"Bearer "+accessToken}});
-    const u = await r.json();
-    document.getElementById("userAvatar").src = u.picture||"";
-    document.getElementById("userName").textContent = u.name||u.email||"";
+    const r=await fetch("https://www.googleapis.com/oauth2/v3/userinfo",{headers:{Authorization:"Bearer "+accessToken}});
+    const u=await r.json();
+    document.getElementById("userAvatar").src=u.picture||"";
+    document.getElementById("userName").textContent=u.name||u.email||"";
     document.getElementById("userInfo").classList.add("show");
   }catch{}
 }
-
-function signIn(){
-  if(!tokenClient){ toast("جاري التهيئة..."); setTimeout(signIn,1000); return; }
-  tokenClient.prompt = "select_account";
-  tokenClient.requestAccessToken();
-}
-
+function signIn(){ if(!tokenClient){ toast("جاري التهيئة..."); setTimeout(signIn,1000); return; } tokenClient.prompt="select_account"; tokenClient.requestAccessToken(); }
 function signOut(){
   clearInterval(refreshTimer);
   if(accessToken) try{ google.accounts.oauth2.revoke(accessToken,()=>{}); }catch{}
-  accessToken=null; clearToken();
-  selectedIds.clear(); currentFiles=[]; folderStack=[];
+  accessToken=null; clearToken(); selectedIds.clear(); currentFiles=[]; filteredFiles=[]; folderStack=[]; preloadCache={}; preloadQueue=[];
   document.getElementById("loginCard").style.display="flex";
   document.getElementById("filesList").style.display="none";
   document.getElementById("userInfo").classList.remove("show");
@@ -366,51 +395,53 @@ function signOut(){
   document.getElementById("breadcrumb").innerHTML="";
   document.getElementById("backBtn").style.display="none";
   document.getElementById("refreshBadge").textContent="--";
+  document.getElementById("searchBar").classList.remove("show");
+  document.getElementById("filterTabs").classList.remove("show");
+  document.getElementById("statsBar").classList.remove("show");
+  document.getElementById("searchToggleBtn").style.display="none";
   toast("تم تسجيل الخروج");
 }
-window.signOut = signOut;
+window.signOut=signOut;
 
-// ===== FIND TARGET FOLDER =====
+// ===== FIND FOLDER =====
 async function findTargetFolder(){
   showLoading();
   try{
-    const res = await gapi.client.drive.files.list({
-      q: `name='${TARGET_FOLDER}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-      fields: "files(id,name)",
-      pageSize: 10
+    const res=await gapi.client.drive.files.list({
+      q:`name='${TARGET_FOLDER}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+      fields:"files(id,name)",pageSize:10
     });
-    const files = res.result.files||[];
-    if(!files.length){
-      toast("ما لكيت المجلد، يعرض My Drive");
-      folderStack = [{id:"root",name:"My Drive"}];
-    } else {
-      folderStack = [{id:"root",name:"My Drive"},{id:files[0].id,name:files[0].name}];
-    }
+    const files=res.result.files||[];
+    if(!files.length){ toast("ما لكيت المجلد، يعرض My Drive"); folderStack=[{id:"root",name:"My Drive"}]; }
+    else folderStack=[{id:"root",name:"My Drive"},{id:files[0].id,name:files[0].name}];
     loadFolder(folderStack[folderStack.length-1].id);
   }catch(e){
-    if(e.status===401){ toast("انتهت الجلسة، جاري التجديد..."); refreshToken(); return; }
-    toast("خطأ بتحميل المجلد");
-    hideLoading();
+    if(e.status===401){ toast("انتهت الجلسة"); refreshToken(); return; }
+    toast("خطأ بتحميل المجلد"); hideLoading();
   }
 }
 
 // ===== LOAD FOLDER =====
 async function loadFolder(folderId){
-  showLoading();
-  selectedIds.clear(); updateSendBtn();
+  showLoading(); selectedIds.clear(); updateSendBtn(); preloadCache={}; preloadQueue=[];
   try{
-    const res = await gapi.client.drive.files.list({
-      q: `'${folderId}' in parents and trashed=false`,
-      fields: "files(id,name,mimeType,size,modifiedTime)",
-      orderBy: "name",
-      pageSize: 100
+    const res=await gapi.client.drive.files.list({
+      q:`'${folderId}' in parents and trashed=false`,
+      fields:"files(id,name,mimeType,size,modifiedTime)",
+      orderBy:"modifiedTime desc", // أحدث أول
+      pageSize:100
     });
-    currentFiles = res.result.files||[];
-    renderFiles(); renderBreadcrumb();
+    currentFiles=res.result.files||[];
+    applyFilterAndSearch();
+    renderBreadcrumb();
     document.getElementById("loginCard").style.display="none";
     document.getElementById("filesList").style.display="block";
     document.getElementById("toolbar").classList.add("show");
-    document.getElementById("backBtn").style.display = folderStack.length>1?"flex":"none";
+    document.getElementById("filterTabs").classList.add("show");
+    document.getElementById("statsBar").classList.add("show");
+    document.getElementById("searchToggleBtn").style.display="flex";
+    document.getElementById("backBtn").style.display=folderStack.length>1?"flex":"none";
+    startPreload();
   }catch(e){
     if(e.status===401){ refreshToken(); return; }
     toast("خطأ بتحميل الملفات");
@@ -418,23 +449,102 @@ async function loadFolder(folderId){
   hideLoading();
 }
 
+// ===== FILTER + SEARCH =====
+function applyFilterAndSearch(){
+  let files=[...currentFiles];
+
+  // فلتر النوع
+  if(activeFilter==="pdf") files=files.filter(f=>f.name?.toLowerCase().endsWith(".pdf"));
+  else if(activeFilter==="folder") files=files.filter(f=>f.mimeType==="application/vnd.google-apps.folder");
+  else if(activeFilter==="other") files=files.filter(f=>f.mimeType!=="application/vnd.google-apps.folder"&&!f.name?.toLowerCase().endsWith(".pdf"));
+
+  // بحث
+  if(searchQuery.trim()){
+    const q=searchQuery.trim().toLowerCase();
+    files=files.filter(f=>(f.name||"").toLowerCase().includes(q));
+  }
+
+  filteredFiles=files;
+  renderFiles();
+  updateStatsBar();
+}
+
+function setFilter(type, btn){
+  activeFilter=type;
+  document.querySelectorAll(".filter-tab").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  applyFilterAndSearch();
+}
+window.setFilter=setFilter;
+
+function toggleSearch(){
+  const bar=document.getElementById("searchBar");
+  bar.classList.toggle("show");
+  if(bar.classList.contains("show")) document.getElementById("searchBarInput").focus();
+  else{ document.getElementById("searchBarInput").value=""; searchQuery=""; applyFilterAndSearch(); }
+}
+function clearSearch(){ document.getElementById("searchBarInput").value=""; searchQuery=""; applyFilterAndSearch(); }
+window.toggleSearch=toggleSearch; window.clearSearch=clearSearch;
+document.addEventListener("DOMContentLoaded",()=>{
+  document.getElementById("searchBarInput").addEventListener("input",e=>{ searchQuery=e.target.value; applyFilterAndSearch(); });
+});
+
+function updateStatsBar(){
+  const total=filteredFiles.length;
+  const totalSize=filteredFiles.reduce((s,f)=>s+(Number(f.size)||0),0);
+  document.getElementById("statTotal").textContent=total+" ملف";
+  const szEl=document.getElementById("statSize");
+  if(totalSize>0){ szEl.textContent=formatSize(totalSize); szEl.style.display=""; }
+  else szEl.style.display="none";
+  const preloadedCount=filteredFiles.filter(f=>preloadCache[f.id]).length;
+  const preEl=document.getElementById("statPreloaded");
+  if(preloadedCount>0){ preEl.textContent=`⚡ ${preloadedCount} جاهز`; preEl.style.display=""; }
+  else preEl.style.display="none";
+}
+
+// ===== PRELOAD =====
+async function startPreload(){
+  preloadQueue=[];
+  const filesToPreload=currentFiles.filter(f=>f.mimeType!=="application/vnd.google-apps.folder"&&!preloadCache[f.id]);
+  preloadQueue=[...filesToPreload];
+  // شغل 2 workers بالخلفية
+  for(let i=0;i<2;i++) preloadWorker();
+}
+
+async function preloadWorker(){
+  while(preloadQueue.length){
+    const f=preloadQueue.shift();
+    if(!f||preloadCache[f.id]) continue;
+    try{
+      const res=await fetch(`https://www.googleapis.com/drive/v3/files/${f.id}?alt=media`,{headers:{Authorization:"Bearer "+accessToken}});
+      if(!res.ok) continue;
+      const blob=await res.blob();
+      preloadCache[f.id]=new File([blob],f.name,{type:blob.type||"application/pdf"});
+      updateStatsBar();
+      renderFiles(); // refresh to show green indicator
+    }catch{}
+  }
+}
+
 // ===== RENDER =====
 function renderFiles(){
-  const wrap = document.getElementById("filesList");
-  if(!currentFiles.length){ wrap.innerHTML='<div class="empty-box">ماكو ملفات هنا</div>'; return; }
-  wrap.innerHTML = currentFiles.map((f,i)=>{
-    const isFolder = f.mimeType==="application/vnd.google-apps.folder";
-    const isPdf    = f.name?.toLowerCase().endsWith(".pdf");
-    const checked  = selectedIds.has(f.id);
-    const size     = f.size ? formatSize(Number(f.size)) : "";
-    const date     = f.modifiedTime ? new Date(f.modifiedTime).toLocaleDateString("ar") : "";
-    return `<div class="file-card${checked?" selected":""}" data-idx="${i}">
+  const wrap=document.getElementById("filesList");
+  if(!filteredFiles.length){ wrap.innerHTML='<div class="empty-box">ماكو ملفات هنا</div>'; return; }
+  wrap.innerHTML=filteredFiles.map((f,i)=>{
+    const isFolder=f.mimeType==="application/vnd.google-apps.folder";
+    const isPdf=f.name?.toLowerCase().endsWith(".pdf");
+    const checked=selectedIds.has(f.id);
+    const isPreloaded=!!preloadCache[f.id];
+    const size=f.size?formatSize(Number(f.size)):"";
+    const date=f.modifiedTime?new Date(f.modifiedTime).toLocaleDateString("ar"):"";
+    const preloadDot=isPreloaded&&!isFolder?` <span style="color:#16a34a;font-size:10px">⚡</span>`:"";
+    return `<div class="file-card${checked?" selected":""}${isPreloaded?" preloaded":""}" data-idx="${i}">
       <input type="checkbox" class="file-check" ${checked?"checked":""}>
       <div class="file-icon${isFolder?" folder":""}">
         <i class="bi ${isFolder?"bi-folder-fill":isPdf?"bi-file-earmark-pdf-fill":"bi-file-earmark-fill"}"></i>
       </div>
       <div class="file-info">
-        <div class="file-name">${esc(f.name)}</div>
+        <div class="file-name">${esc(f.name)}${preloadDot}</div>
         <div class="file-meta">${size}${size&&date?" • ":""}${date}</div>
       </div>
       ${isFolder?`<i class="bi bi-chevron-left file-arrow"></i>`:""}
@@ -442,20 +552,20 @@ function renderFiles(){
   }).join("");
 
   wrap.querySelectorAll(".file-card").forEach((card,i)=>{
-    const f = currentFiles[i];
+    const f=filteredFiles[i];
     if(f.mimeType==="application/vnd.google-apps.folder"){
-      card.onclick = ()=>openFolder(f);
-      card.querySelector(".file-check").onclick = e=>{e.stopPropagation(); toggleFile(i);};
-    } else {
-      card.onclick = ()=>toggleFile(i);
-      card.querySelector(".file-check").onclick = e=>{e.stopPropagation(); toggleFile(i);};
+      card.onclick=()=>openFolder(f);
+      card.querySelector(".file-check").onclick=e=>{e.stopPropagation();toggleFile(i);};
+    }else{
+      card.onclick=()=>toggleFile(i);
+      card.querySelector(".file-check").onclick=e=>{e.stopPropagation();toggleFile(i);};
     }
   });
 }
 
 function renderBreadcrumb(){
-  document.getElementById("breadcrumb").innerHTML = folderStack.map((f,i)=>{
-    const isLast = i===folderStack.length-1;
+  document.getElementById("breadcrumb").innerHTML=folderStack.map((f,i)=>{
+    const isLast=i===folderStack.length-1;
     return `<span class="crumb" onclick="jumpTo(${i})">${esc(f.name)}</span>${!isLast?'<span class="crumb-sep"><i class="bi bi-chevron-left"></i></span>':""}`;
   }).join("");
 }
@@ -463,148 +573,122 @@ function renderBreadcrumb(){
 function openFolder(f){ folderStack.push({id:f.id,name:f.name}); loadFolder(f.id); }
 function goBack(){ if(folderStack.length<=1) return; folderStack.pop(); loadFolder(folderStack[folderStack.length-1].id); }
 function jumpTo(idx){ folderStack=folderStack.slice(0,idx+1); loadFolder(folderStack[folderStack.length-1].id); }
-window.goBack=goBack; window.jumpTo=jumpTo;
+window.goBack=goBack; window.jumpTo=jumpTo; window.openFolder=openFolder;
 
 // ===== SELECTION =====
 function toggleFile(idx){
-  const f = currentFiles[idx];
+  const f=filteredFiles[idx];
   if(f.mimeType==="application/vnd.google-apps.folder") return;
   selectedIds.has(f.id)?selectedIds.delete(f.id):selectedIds.add(f.id);
   updateSendBtn(); renderFiles();
 }
-function selectAll(){ currentFiles.forEach(f=>{ if(f.mimeType!=="application/vnd.google-apps.folder") selectedIds.add(f.id); }); updateSendBtn(); renderFiles(); }
+function selectAll(){ filteredFiles.forEach(f=>{ if(f.mimeType!=="application/vnd.google-apps.folder") selectedIds.add(f.id); }); updateSendBtn(); renderFiles(); }
 function clearSel(){ selectedIds.clear(); updateSendBtn(); renderFiles(); }
 function updateSendBtn(){
-  const count = selectedIds.size;
-  const btn = document.getElementById("sendBtn");
-  btn.disabled = !count;
-  btn.textContent = count?`إرسال المحدد (${count})`:"إرسال المحدد";
-  document.getElementById("selCount").textContent = count+" محدد";
-  document.getElementById("bottomBar").style.display = count?"block":"none";
-  document.getElementById("bottomBarDelete").style.display = count?"none":"block";
+  const count=selectedIds.size;
+  const btn=document.getElementById("sendBtn");
+  btn.disabled=!count;
+  // حساب الحجم الإجمالي للمحدد
+  const totalSize=filteredFiles.filter(f=>selectedIds.has(f.id)).reduce((s,f)=>s+(Number(f.size)||0),0);
+  const sizeStr=totalSize>0?" ("+formatSize(totalSize)+")":"";
+  btn.textContent=count?`إرسال ${count} ملف${sizeStr}`:"إرسال المحدد";
+  document.getElementById("selCount").textContent=count+" محدد";
+  document.getElementById("bottomBar").style.display=count?"block":"none";
+  document.getElementById("bottomBarDelete").style.display=count?"none":"block";
 }
 window.selectAll=selectAll; window.clearSel=clearSel;
 
-// ===== PROGRESS UI =====
-let progressState = {};
-function openProgress(files){
-  progressState = {};
-  files.forEach(f=>{ progressState[f.id]={name:f.name,status:"waiting"}; });
-  renderProgress(files.length);
-  document.getElementById("progressOverlay").classList.add("show");
-  document.getElementById("progressClose").style.display="none";
+// ===== CONFIRM BEFORE SEND =====
+let pendingSend = false;
+function sendSelected(){
+  const toSend=filteredFiles.filter(f=>selectedIds.has(f.id));
+  if(!toSend.length) return;
+  // معاينة الملفات قبل الإرسال
+  document.getElementById("confirmSub").textContent=`${toSend.length} ملف • ${formatSize(toSend.reduce((s,f)=>s+(Number(f.size)||0),0))}`;
+  document.getElementById("confirmFilesList").innerHTML=toSend.map(f=>`<div class="confirm-file-item">${esc(f.name)}</div>`).join("");
+  pendingSend=true;
+  document.getElementById("confirmOverlay").classList.add("show");
 }
+function closeConfirm(){ document.getElementById("confirmOverlay").classList.remove("show"); pendingSend=false; }
+window.closeConfirm=closeConfirm;
+async function doSend(){
+  closeConfirm();
+  const toSend=filteredFiles.filter(f=>selectedIds.has(f.id));
+  if(!toSend.length) return;
+  openProgress(toSend);
+  const downloadedFiles=await downloadParallel(toSend);
+  document.getElementById("progressClose").style.display="block";
+  document.querySelector(".progress-card .progress-title").textContent=
+    downloadedFiles.length===toSend.length?"✅ اكتمل التحضير":`⚠️ تم ${downloadedFiles.length} من ${toSend.length}`;
+  if(!downloadedFiles.length){ toast("فشل تحميل كل الملفات"); return; }
+  await sleep(500);
+  closeProgress();
+  try{
+    if(navigator.canShare&&navigator.canShare({files:downloadedFiles})){
+      await navigator.share({files:downloadedFiles,title:"ملفات PDF"});
+      clearSel();
+    }else{
+      downloadedFiles.forEach(file=>{ const url=URL.createObjectURL(file); const a=document.createElement("a"); a.href=url; a.download=file.name; a.click(); setTimeout(()=>URL.revokeObjectURL(url),3000); });
+    }
+  }catch(e){ if(e?.name!=="AbortError") toast("صار خطأ بالمشاركة"); }
+}
+window.doSend=doSend;
+window.sendSelected=sendSelected;
+
+// ===== PROGRESS =====
+let progressState={};
+function openProgress(files){ progressState={}; files.forEach(f=>{ progressState[f.id]={name:f.name,status:"waiting"}; }); renderProgress(files.length); document.getElementById("progressOverlay").classList.add("show"); document.getElementById("progressClose").style.display="none"; }
 function renderProgress(total){
-  const items = document.getElementById("progressItems");
-  const done  = Object.values(progressState).filter(s=>s.status==="done").length;
-  const err   = Object.values(progressState).filter(s=>s.status==="error").length;
-  const pct   = total ? Math.round((done+err)/total*100) : 0;
-  document.getElementById("progressFill").style.width = pct+"%";
-  document.getElementById("progressSummary").textContent = `${done} / ${total} ${err?" (فشل "+err+")":""}`;
-  items.innerHTML = Object.values(progressState).slice(0,8).map(s=>{
-    let icon="⏳", cls="loading";
-    if(s.status==="done"){ icon="✅"; cls="done"; }
-    else if(s.status==="error"){ icon="❌"; cls="error"; }
-    else if(s.status==="retry"){ icon="🔁"; cls="retry"; }
-    else if(s.status==="loading"){ icon="⏳"; cls="loading"; }
+  const done=Object.values(progressState).filter(s=>s.status==="done").length;
+  const err=Object.values(progressState).filter(s=>s.status==="error").length;
+  document.getElementById("progressFill").style.width=(total?Math.round((done+err)/total*100):0)+"%";
+  document.getElementById("progressSummary").textContent=`${done} / ${total}${err?" (فشل "+err+")":""}`;
+  document.getElementById("progressItems").innerHTML=Object.values(progressState).slice(0,8).map(s=>{
+    let icon="⏳",cls="loading";
+    if(s.status==="done"){icon="✅";cls="done";}else if(s.status==="error"){icon="❌";cls="error";}else if(s.status==="retry"){icon="🔁";cls="retry";}
     return `<div class="progress-item"><div class="p-icon ${cls}">${icon}</div><div class="p-name">${esc(s.name)}</div><div class="p-status">${s.status==="done"?"تم":s.status==="error"?"فشل":s.status==="retry"?"إعادة...":"جاري"}</div></div>`;
   }).join("");
 }
-function updateProgress(id, status, total){
-  if(progressState[id]) progressState[id].status = status;
-  renderProgress(total);
-}
+function updateProgress(id,status,total){ if(progressState[id]) progressState[id].status=status; renderProgress(total); }
 function closeProgress(){ document.getElementById("progressOverlay").classList.remove("show"); }
-window.closeProgress = closeProgress;
+window.closeProgress=closeProgress;
 
-// ===== DOWNLOAD WITH RETRY =====
-async function downloadFile(f, total){
-  updateProgress(f.id, "loading", total);
-  for(let attempt=1; attempt<=MAX_RETRY; attempt++){
+// ===== DOWNLOAD WITH RETRY + PRELOAD CACHE =====
+async function downloadFile(f,total){
+  // استخدم الكاش لو موجود
+  if(preloadCache[f.id]){ updateProgress(f.id,"done",total); return preloadCache[f.id]; }
+  updateProgress(f.id,"loading",total);
+  for(let attempt=1;attempt<=MAX_RETRY;attempt++){
     try{
       if(attempt>1){ updateProgress(f.id,"retry",total); await sleep(600*attempt); }
-      const res = await fetch(
-        `https://www.googleapis.com/drive/v3/files/${f.id}?alt=media`,
-        {headers:{Authorization:"Bearer "+accessToken}}
-      );
-      if(res.status===401){
-        // جدد التوكن وجرب مرة ثانية
-        await new Promise(resolve=>{ tokenClient.callback=(r)=>{ if(!r.error){ accessToken=r.access_token; saveToken(accessToken); gapi.client.setToken({access_token:accessToken}); } resolve(); }; tokenClient.requestAccessToken(); });
-        continue;
-      }
+      const res=await fetch(`https://www.googleapis.com/drive/v3/files/${f.id}?alt=media`,{headers:{Authorization:"Bearer "+accessToken}});
+      if(res.status===401){ await new Promise(resolve=>{ tokenClient.callback=(r)=>{ if(!r.error){ accessToken=r.access_token; saveToken(accessToken); gapi.client.setToken({access_token:accessToken}); } resolve(); }; tokenClient.requestAccessToken(); }); continue; }
       if(!res.ok) throw new Error("HTTP "+res.status);
-      const blob = await res.blob();
+      const blob=await res.blob();
       updateProgress(f.id,"done",total);
-      return new File([blob], f.name, {type:blob.type||"application/pdf"});
-    }catch(e){
-      if(attempt===MAX_RETRY){ updateProgress(f.id,"error",total); return null; }
-    }
+      return new File([blob],f.name,{type:blob.type||"application/pdf"});
+    }catch(e){ if(attempt===MAX_RETRY){ updateProgress(f.id,"error",total); return null; } }
   }
   return null;
 }
 
-// ===== PARALLEL DOWNLOAD =====
 async function downloadParallel(files){
-  const results = new Array(files.length).fill(null);
-  const queue   = files.map((f,i)=>({f,i}));
-  const workers = Array.from({length:MAX_PARALLEL},async ()=>{
-    while(queue.length){
-      const {f,i} = queue.shift();
-      results[i] = await downloadFile(f, files.length);
-    }
-  });
+  const results=new Array(files.length).fill(null);
+  const queue=files.map((f,i)=>({f,i}));
+  const workers=Array.from({length:MAX_PARALLEL},async()=>{ while(queue.length){ const {f,i}=queue.shift(); results[i]=await downloadFile(f,files.length); } });
   await Promise.all(workers);
   return results.filter(Boolean);
 }
 
-// ===== SEND =====
-async function sendSelected(){
-  const toSend = currentFiles.filter(f=>selectedIds.has(f.id));
-  if(!toSend.length) return;
-
-  openProgress(toSend);
-
-  const downloadedFiles = await downloadParallel(toSend);
-
-  // أظهر زر الإغلاق بعد الانتهاء
-  document.getElementById("progressClose").style.display="block";
-  document.querySelector(".progress-card .progress-title").textContent =
-    downloadedFiles.length===toSend.length ? "✅ اكتمل التحضير" : `⚠️ تم ${downloadedFiles.length} من ${toSend.length}`;
-
-  if(!downloadedFiles.length){ toast("فشل تحميل كل الملفات"); return; }
-
-  // انتظر ثانية ثم شارك
-  await sleep(600);
-  closeProgress();
-
-  try{
-    if(navigator.canShare && navigator.canShare({files:downloadedFiles})){
-      await navigator.share({files:downloadedFiles, title:"ملفات PDF"});
-      clearSel();
-    }else{
-      downloadedFiles.forEach(file=>{
-        const url=URL.createObjectURL(file);
-        const a=document.createElement("a"); a.href=url; a.download=file.name; a.click();
-        setTimeout(()=>URL.revokeObjectURL(url),3000);
-      });
-    }
-  }catch(e){ if(e?.name!=="AbortError") toast("صار خطأ بالمشاركة"); }
-}
-window.sendSelected = sendSelected;
-
 // ===== HELPERS =====
-function showLoading(){
-  const w=document.getElementById("filesList"); w.style.display="block";
-  w.innerHTML=[1,2,3,4,5].map(()=>'<div class="skeleton"></div>').join("");
-  document.getElementById("loginCard").style.display="none";
-}
+function showLoading(){ const w=document.getElementById("filesList"); w.style.display="block"; w.innerHTML=[1,2,3,4,5].map(()=>'<div class="skeleton"></div>').join(""); document.getElementById("loginCard").style.display="none"; }
 function hideLoading(){}
 function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
 function formatSize(b){ if(b<1024) return b+" B"; if(b<1048576) return (b/1024).toFixed(1)+" KB"; if(b<1073741824) return (b/1048576).toFixed(1)+" MB"; return (b/1073741824).toFixed(1)+" GB"; }
 function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
-window.signIn=signIn; window.openFolder=openFolder;
-window.onload = initGapi;
+window.signIn=signIn;
+window.onload=initGapi;
 </script>
 </body>
 </html>
