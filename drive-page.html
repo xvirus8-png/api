@@ -33,7 +33,8 @@ body{background:var(--bg);color:var(--text);transition:background .3s,color .3s;
 .icon-btn{width:42px;height:42px;border:none;border-radius:12px;background:var(--card);box-shadow:var(--shadow);font-size:18px;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;transition:background .3s}
 
 /* SEARCH BAR */
-#searchBar{display:flex;margin-bottom:10px;gap:8px}
+#searchBar{display:none;margin-bottom:10px;gap:8px}
+#searchBar.show{display:flex}
 #searchBarInput{flex:1;padding:11px 14px;border-radius:12px;border:1.5px solid var(--primary-border);font-size:15px;background:var(--input-bg);color:var(--text);outline:none;transition:background .3s,color .3s,border-color .3s}
 .clear-btn{width:38px;height:38px;border:none;border-radius:10px;background:var(--primary-light);color:var(--primary);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;border:1px solid var(--primary-border)}
 
@@ -66,7 +67,7 @@ body{background:var(--bg);color:var(--text);transition:background .3s,color .3s;
 .file-icon-wrap{position:relative;flex:0 0 42px}
 .file-icon{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#ef4444,#fb7185);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px}
 .file-icon.folder{background:linear-gradient(135deg,#f59e0b,#fbbf24)}
-.preload-badge{position:absolute;bottom:-3px;right:-3px;width:16px;height:16px;border-radius:50%;background:#16a34a;border:2px solid var(--card);display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;display:none}
+.preload-badge{position:absolute;bottom:-3px;right:-3px;width:16px;height:16px;border-radius:50%;background:#16a34a;border:2px solid var(--card);align-items:center;justify-content:center;font-size:9px;color:#fff;display:none}
 .file-card.preloaded .preload-badge{display:flex}
 .file-info{flex:1;min-width:0}
 .file-name{font-size:14px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
